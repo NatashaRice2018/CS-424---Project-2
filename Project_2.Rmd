@@ -27,7 +27,9 @@ MarchData<- read.table(file = "March_flights.cleaned.csv", header = FALSE,sep = 
 MayData<- read.table(file = "May_flights.cleaned.csv", header = FALSE,sep = '\t') 
 NovemberData<- read.table(file = "November_flights.cleaned.csv", header = FALSE,sep = '\t') 
 OctoberData<- read.table(file = "October_flights.cleaned.csv", header = FALSE,sep = '\t') 
+SeptebmerData<- read.table(file = "September_flights.cleaned.csv", header = FALSE,sep = '\t') 
 
+allData <- rbind(AprilData, AugustData, DecemberData, FebuaryData, JanuaryData, JuneData, JulyData, MarchData, MayData, NovemberData, OctoberData, SeptebmerData)
 #temp = list.files(pattern="*.csv")
 #allData2 <- lapply(temp, read.delim, header = FALSE)
 #allData3 <- do.call(rbind, allData2)
