@@ -1,0 +1,36 @@
+---
+title: "Project 2"
+output: html_notebook
+---
+
+Libaries and reading in data.
+
+```{r}
+library(shiny)
+library(shinydashboard)
+library(ggplot2)
+library(lubridate)
+library(DT)
+library(jpeg)
+library(grid)
+library(reshape2)
+library(leaflet)
+
+AprilData<- read.table(file = "April_flights.cleaned.csv", header = FALSE,sep = '\t') 
+AugustData<- read.table(file = "August_flights.cleaned.csv", header = FALSE,sep = '\t') 
+DecemberData<- read.table(file = "December_flights.cleaned.csv", header = FALSE,sep = '\t') 
+FebuaryData<- read.table(file = "Febuary_flights.cleaned.csv", header = FALSE,sep = '\t') 
+JanuaryData<- read.table(file = "January_flights.cleaned.csv", header = FALSE,sep = '\t') 
+JuneData<- read.table(file = "June_flights.cleaned.csv", header = FALSE,sep = '\t') 
+JulyData<- read.table(file = "July_flights.cleaned.csv", header = FALSE,sep = '\t') 
+MarchData<- read.table(file = "March_flights.cleaned.csv", header = FALSE,sep = '\t') 
+MayData<- read.table(file = "May_flights.cleaned.csv", header = FALSE,sep = '\t') 
+NovemberData<- read.table(file = "November_flights.cleaned.csv", header = FALSE,sep = '\t') 
+OctoberData<- read.table(file = "October_flights.cleaned.csv", header = FALSE,sep = '\t') 
+
+#temp = list.files(pattern="*.csv")
+#allData2 <- lapply(temp, read.delim, header = FALSE)
+#allData3 <- do.call(rbind, allData2)
+```
+
+
