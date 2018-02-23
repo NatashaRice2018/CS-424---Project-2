@@ -51,7 +51,7 @@ ui <- dashboardPage(
       ), #end of tab item
       tabItem("about",
               h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddarth Basu"),
-              a("Future link to project website", href="https://google.com")
+              a("Link to project website", href="https://guillermokrh.github.io/CS-424---Project-2-Website/")
       )
     ) # end of TabItems 
   ) # end of DashboardBody
