@@ -29,14 +29,14 @@ def carrier_table(lookup):
 def main():
     carrier_lookup = r"C:\Users\natas\Documents\cs 424\CS-424---Project-2\CARRIER_HISTORY.csv"
     airline_lookup = r"C:\Users\natas\Documents\cs 424\CS-424---Project-2\AIRLINE_ID.csv"
-    flight_data    = r"C:\Users\natas\Documents\cs 424\CS-424---Project-2\April_Airport_Data.csv"
+    flight_data    = r"C:\Users\natas\Documents\cs 424\CS-424---Project-2\raw_csv_files\Sept_Transportation_Stats.csv"
 
     airlines       = airline_table(airline_lookup)
     carriers       = carrier_table(carrier_lookup)
 
     with open(flight_data, 'r') as data:
         reader = csv.DictReader(data)
-        with open('ontime_flights.cleaned.csv', 'w') as output:
+        with open('September_flights.cleaned.csv', 'w') as output:
             writer = csv.DictWriter(output, delimiter="\t", fieldnames=reader.fieldnames)
             for row in reader:
                 row['AIRLINE_ID'] = airlines[row['AIRLINE_ID']]['code']
