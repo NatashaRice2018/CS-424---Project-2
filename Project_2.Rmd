@@ -1,4 +1,5 @@
 
+
 ---
 title: "Project 2"
 output: html_notebook
@@ -16,6 +17,7 @@ library(jpeg)
 library(grid)
 library(reshape2)
 library(leaflet)
+library(dplyr)
 
 ColNames<- c("FL_DATE","AIRLINE_ID","CARRIER","ORIGIN_AIRPORT_ID","ORIGIN","ORIGIN_CITY_NAME","ORIGIN_STATE_NM","DEST_AIRPORT_ID","DEST_CITY_NAME","DEST_STATE_NM","DEP_TIME","DEP_DELAY","DEP_DELAY_NEW","ARR_TIME","ARR_DELAY","ARR_DELAY_NEW","CANCELLED","CANCELLATION_CODE","DIVERTED","ACTUAL_ELAPSED_TIME","FLIGHTS","DISTANCE","CARRIER_DELAY","WEATHER_DELAY","NAS_DELAY","SECURITY_DELAY","LATE_AIRCRAFT_DELAY")
 AprilData<- read.table(file = "April_flights.cleaned.csv", header = FALSE,sep = '\t') 
