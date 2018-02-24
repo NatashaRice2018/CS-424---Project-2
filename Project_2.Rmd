@@ -1,3 +1,4 @@
+
 ---
 title: "Project 2"
 output: html_notebook
@@ -51,4 +52,43 @@ allData <- rbind(AprilData, AugustData, DecemberData, FebuaryData, JanuaryData, 
 
 We will be using August and O'Hare to create functioins, modularity will be added later.
 
+What Yang did:
 
+```{r}
+
+# Arrival of MDW
+  Arrival_MDW <- subset(AugustData, AugustData$DEST_AIRPORT_ID== 13232)
+  Arrival_MDW$ARR_TIME <- sprintf("%04d", Arrival_MDW$ARR_TIME)
+  Arrival_MDW$ARR_TIME_new <- as.POSIXct(paste(Arrival_MDW$FL_DATE, Arrival_MDW$ARR_TIME), format = "%Y-%m-%d %H%M" )
+  tem <- Arrival_MDW$ARR_TIME_new 
+  Arrival_MDW$hour <- lubridate::hour(tem)
+  Arrival_MDW$day <- lubridate::day(tem)
+  Arrival_MDW$week <- lubridate::week(tem)
+  Arr_table_hour_day <- group_by(Arrival_MDW,day,hour) %>% summarise(number_arrival=n())
+  head(Arr_table_hour_day)
+  Arrival_MDW$week <- lubridate::week(tem)
+  Arr_table_day_week <- group_by(Arrival_MDW,week,day) %>% summarise(number_arrival=n())
+  head(Arr_table_day_week)
+  
+# The delay of Arrival MDW 
+
+Arr_table_delay_day_hour <- group_by(Arrival_MDW,day,hour)  %>% select(DEP_DELAY) %>% filter(DEP_DELAY >0) %>% summarise(number_arrival_delay=n())
+
+# table showing the total number of delays for each hour of the day across that month in MDW and ORD
+tem3 <- AugustData
+
+ tem3$ARR_TIME <- sprintf("%04d", tem3$ARR_TIME)
+  tem3$ARR_TIME_new <- as.POSIXct(paste(tem3$FL_DATE, tem3$ARR_TIME), format = "%Y-%m-%d %H%M" )
+
+  tem3$hour <- lubridate::hour( tem3$ARR_TIME_new)
+  tem3$day <- lubridate::day( tem3$ARR_TIME_new)
+  tem3$week <- lubridate::week( tem3$ARR_TIME_new)
+
+MDW_delay_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&&(ORIGIN_AIRPORT_ID==13232 | DEST_AIRPORT_ID == 13232) ) %>% summarise(number_arrival_delay=n())
+
+ORD_delay_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&&(ORIGIN_AIRPORT_ID==13930 | DEST_AIRPORT_ID == 13930) ) %>% summarise(number_arrival_delay=n())
+
+head(MDW_delay_day_hour)
+head(ORD_delay_day_hour)
+
+```
