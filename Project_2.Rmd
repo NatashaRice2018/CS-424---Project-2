@@ -54,7 +54,7 @@ We will be using August and O'Hare to create functioins, modularity will be adde
 
 What Yang did:
 
-```{r}
+)```{r}
 
 tem3 <- AugustData
 
@@ -105,6 +105,6 @@ head(MDW_dep_week_day)
 head(ORD_dep_week_day)
 
 head(MDW_delay_day_hour)
-head(ORD_delay_day_hour
+head(ORD_delay_day_hour)
 
 ```
