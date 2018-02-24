@@ -54,7 +54,7 @@ We will be using August and O'Hare to create functioins, modularity will be adde
 
 What Yang did:
 
-)```{r}
+```{r}
 
 tem3 <- AugustData
 
