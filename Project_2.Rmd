@@ -56,25 +56,6 @@ What Yang did:
 
 ```{r}
 
-# Arrival of MDW
-  Arrival_MDW <- subset(AugustData, AugustData$DEST_AIRPORT_ID== 13232)
-  Arrival_MDW$ARR_TIME <- sprintf("%04d", Arrival_MDW$ARR_TIME)
-  Arrival_MDW$ARR_TIME_new <- as.POSIXct(paste(Arrival_MDW$FL_DATE, Arrival_MDW$ARR_TIME), format = "%Y-%m-%d %H%M" )
-  tem <- Arrival_MDW$ARR_TIME_new 
-  Arrival_MDW$hour <- lubridate::hour(tem)
-  Arrival_MDW$day <- lubridate::day(tem)
-  Arrival_MDW$week <- lubridate::week(tem)
-  Arr_table_hour_day <- group_by(Arrival_MDW,day,hour) %>% summarise(number_arrival=n())
-  head(Arr_table_hour_day)
-  Arrival_MDW$week <- lubridate::week(tem)
-  Arr_table_day_week <- group_by(Arrival_MDW,week,day) %>% summarise(number_arrival=n())
-  head(Arr_table_day_week)
-  
-# The delay of Arrival MDW 
-
-Arr_table_delay_day_hour <- group_by(Arrival_MDW,day,hour)  %>% select(DEP_DELAY) %>% filter(DEP_DELAY >0) %>% summarise(number_arrival_delay=n())
-
-# table showing the total number of delays for each hour of the day across that month in MDW and ORD
 tem3 <- AugustData
 
  tem3$ARR_TIME <- sprintf("%04d", tem3$ARR_TIME)
@@ -83,12 +64,47 @@ tem3 <- AugustData
   tem3$hour <- lubridate::hour( tem3$ARR_TIME_new)
   tem3$day <- lubridate::day( tem3$ARR_TIME_new)
   tem3$week <- lubridate::week( tem3$ARR_TIME_new)
+  
+# table showing the total number of departures and total number of arrivals for each hour of the day across that month (i.e. how many from 9am to 10am summed over every day of that month) For MDW  
+MDW_arr_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID) %>% filter(DEST_AIRPORT_ID == 13232 ) %>% summarise(number_arrival=n())
+
+MDW_dep_day_hour <- group_by(tem3,day,hour)  %>% select(ORIGIN_AIRPORT_ID) %>% filter(ORIGIN_AIRPORT_ID == 13232 ) %>% summarise(number_arrival=n())
+
+# table showing the total number of departures and total number of arrivals for each day of the week across that month (i.e. how many on all of the mondays of that month)
+MDW_arr_week_day <- group_by(tem3,week,day)  %>% select(DEST_AIRPORT_ID) %>% filter(DEST_AIRPORT_ID == 13232 ) %>% summarise(number_arrival=n())
+
+MDW_dep_week_day <- group_by(tem3,week,day)  %>% select(ORIGIN_AIRPORT_ID) %>% filter(ORIGIN_AIRPORT_ID == 13232 ) %>% summarise(number_arrival=n())
+
+# ORD
+ORD_arr_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID) %>% filter(DEST_AIRPORT_ID == 13930 ) %>% summarise(number_arrival=n())
+
+ORD_dep_day_hour <- group_by(tem3,day,hour)  %>% select(ORIGIN_AIRPORT_ID) %>% filter(ORIGIN_AIRPORT_ID == 13930 ) %>% summarise(number_arrival=n())
+
+#ORD
+ORD_arr_week_day <- group_by(tem3,week,day)  %>% select(DEST_AIRPORT_ID) %>% filter(DEST_AIRPORT_ID == 13930 ) %>% summarise(number_arrival=n())
+
+ORD_dep_week_day <- group_by(tem3,week,day)  %>% select(ORIGIN_AIRPORT_ID) %>% filter(ORIGIN_AIRPORT_ID == 13930 ) %>% summarise(number_arrival=n())
+
+#MDW table showing the total number of delays for each hour of the day across that month (i.e. how many from 9am to 10am summed over every day of that month) 
 
 MDW_delay_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&&(ORIGIN_AIRPORT_ID==13232 | DEST_AIRPORT_ID == 13232) ) %>% summarise(number_arrival_delay=n())
+  
+ORD_delay_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&&(ORIGIN_AIRPORT_ID==13930 | DEST_AIRPORT_ID == 13930) ) %>% 
+  
+summarise(number_arrival_delay=n())
 
-ORD_delay_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&&(ORIGIN_AIRPORT_ID==13930 | DEST_AIRPORT_ID == 13930) ) %>% summarise(number_arrival_delay=n())
+
+head(MDW_arr_day_hour)
+head(ORD_arr_day_hour)
+head(MDW_dep_day_hour)
+head(ORD_dep_day_hour)
+
+head(MDW_arr_week_day)
+head(ORD_arr_week_day)
+head(MDW_dep_week_day)
+head(ORD_dep_week_day)
 
 head(MDW_delay_day_hour)
-head(ORD_delay_day_hour)
+head(ORD_delay_day_hour
 
 ```
