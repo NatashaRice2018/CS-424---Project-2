@@ -110,3 +110,18 @@ head(MDW_delay_day_hour)
 head(ORD_delay_day_hour)
 
 ```
+```{r}
+# Guillermo addition 2/26/17
+# table showing the number of flights for the most common 15 destination airports from MDW (depart: MDW, arrive: other airport)
+MDW_most_common_15_destinations <- group_by(tem3,DEST_AIRPORT_ID)  %>% select(DEST_AIRPORT_ID, ORIGIN_AIRPORT_ID) %>% filter(ORIGIN_AIRPORT_ID == 13232 ) %>% summarise(number_of_flights=n()) %>% arrange(desc(number_of_flights)) %>% top_n(15)
+
+#Show chart of most comon destinations
+MDW_most_common_15_destinations
+
+# table showing the number of flights for the most common 15 arrival airports (depart: other airport, arrive: MDW) 
+MDW_most_common_15_arrivals <- group_by(tem3,ORIGIN_AIRPORT_ID)  %>% select(DEST_AIRPORT_ID, ORIGIN_AIRPORT_ID) %>% filter(DEST_AIRPORT_ID == 13232 ) %>% summarise(number_of_flights=n()) %>% arrange(desc(number_of_flights)) %>% top_n(15)
+
+#Show chart of most common arrivals 
+MDW_most_common_15_arrivals
+```
+
