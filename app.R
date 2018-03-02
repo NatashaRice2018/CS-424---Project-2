@@ -44,6 +44,9 @@ allData2$weekday_dep <- weekdays(allData2$DEP_TIME_new)
 
 
 
+percent <- function(x, digits = 2, format = "f", ...) {
+  paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
+}
 
 to12hour <- function(v){ 
   if (is.POSIXct(v)==TRUE){
@@ -95,7 +98,7 @@ ui <- dashboardPage(
                 ),
                 box(
                   selectInput("Month", "Select the month to visualize", choices=months, selected = 8)
-                  ),
+                ),
                 box(
                   selectInput("Airport","Select airport:",choices=loc,selected='MDW')),
                 
@@ -165,11 +168,22 @@ server <- function(input, output) {
   
   theme_set(theme_grey(base_size = 18)) 
   
-
+  
   justOneMonthReactive <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$Month)})
   output$result <- renderText({
     paste("You chose Month:", input$Month, "and Airport:", input$Airport)
   })
+  
+  switch_hour<- function(x){
+    c <- x
+    #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
+    if (input$Time!="24 hour"){
+      c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
+    } else {
+      c<-paste(c,":00",sep="")
+    }
+    c
+  }
   
   #table and chart showing the total number of departures and total number of arrivals for all of the domestic airlines
   output$tab1 <-DT::renderDataTable(
@@ -187,9 +201,9 @@ server <- function(input, output) {
     
   )
   
- # table and chart showing the total number of departures and total number of arrivals for each hour of the day across that month (i.e. how many from 9am to 10am summed over every day of that month)
- 
-   output$tab2 <-DT::renderDataTable(
+  # table and chart showing the total number of departures and total number of arrivals for each hour of the day across that month (i.e. how many from 9am to 10am summed over every day of that month)
+  
+  output$tab2 <-DT::renderDataTable(
     DT::datatable({
       justOneMonthReactive <- justOneMonthReactive()
       
@@ -200,14 +214,7 @@ server <- function(input, output) {
       data2 <- merge(dep_hour,arr_hour,all=TRUE)
       data2 <- subset(data2,!is.na(data2$hour))
       data2[is.na(data2)] <- 0
-      c <- data2$hour
-      #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
-      if (input$Time!="24 hour"){
-        c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
-      } else {
-        c<-paste(c,":00",sep="")
-      }
-      data2$hour <- c
+      data4$hour<-switch_hour(data4$hour)
       data2 <- as.data.frame(data2)
       
       data2
@@ -217,7 +224,7 @@ server <- function(input, output) {
     )
     
   )
-
+  
   # the total number of departures and total number of arrivals for each day of the week across that month
   
   output$tab3 <-DT::renderDataTable(
@@ -244,7 +251,21 @@ server <- function(input, output) {
     DT::datatable({
       
       justOneMonthReactive <- justOneMonthReactive()
-      MDW_delay_day_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&& ORIGIN_AIRPORT_ID==input$Airport ) %>% summarise(number_arrival_delay=n())
+      
+      #MDW_delay_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&&(ORIGIN_AIRPORT_ID==13232 | DEST_AIRPORT_ID == 13232) ) %>% summarise(number_arrival_delay=n())
+      delay_arr_hour <- group_by(justOneMonthReactive,hour) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST == input$Airport ) %>% summarise(number_arr_delay=n())
+      delay_dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ORIGIN ==input$Airport & DEP_DELAY <0 ) %>% summarise(number_dep_delay=n())
+      colnames(delay_dep_hour)<-c("hour","number_dep_delay")
+      data4 <- merge(delay_arr_hour,delay_dep_hour,all=TRUE)
+      data4 <- subset(data4,!is.na(data4$hour))
+      data4[is.na(data4)] <- 0
+      data4$hour<-switch_hour(data4$hour)
+      data4 <- as.data.frame(data4)
+      data4$number_delay <- data4$number_arr_delay +data4$number_dep_delay
+      
+      data4$percent_delay <- percent(data4$number_delay/sum(data4$number_delay))
+      
+      data4
     })
   )
   
@@ -256,7 +277,7 @@ server <- function(input, output) {
       
       most_common_15_destinations <- group_by(justOneMonthReactive,DEST)  %>% select(ORIGIN) %>% filter(ORIGIN == input$Airport) %>% summarise(number_of_dest_flights=n()) %>% arrange(desc(number_of_dest_flights)) %>% top_n(15)
       
-
+      
       
       # table showing the number of flights for the most common 15 arrival airports (depart: other airport, arrive: MDW) 
       most_common_15_arrivals <- group_by(justOneMonthReactive,ORIGIN)  %>% select(DEST) %>% filter(DEST == input$Airport ) %>% summarise(number_of_arr_flights=n()) %>% arrange(desc(number_of_arr_flights)) %>% top_n(15)
