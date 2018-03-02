@@ -123,6 +123,11 @@ ui <- dashboardPage(
                 box(title = "table showing the number of flights for the most common 15 airports ", solidHeader = TRUE, status = "primary",width = 12,
                     dataTableOutput("tab5"))
               ),
+              fluidRow(
+                box( title = "Total number of departures/arrivals per month", solidHeader = TRUE, status = "primary", width = 12,
+                     plotOutput("Bar1")
+                )
+              ), 
               
               fluidRow(
                 
@@ -264,6 +269,28 @@ server <- function(input, output) {
     })
   )
   
+  
+  output$Bar1 <- renderPlot({
+    justOneMonthReactive <- justOneMonthReactive()
+    
+    #Get flights with Arrivals in Selected airports and mark them as Arrivals
+    Departures<-subset(justOneMonthReactive, justOneMonthReactive$ORIGIN_AIRPORT_ID == 13930)
+    Departures$type = "Departure"
+    #Get all departures at selected airports and mark them as departures
+    Arrivals<-subset(justOneMonthReactive, justOneMonthReactive$DEST_AIRPORT_ID == 13930)
+    Arrivals$type= "Arrival"
+    
+    ArrivalsDepartures = rbind(Arrivals, Departures)
+    
+    #Bar Plot - made with the Airporit ID so that the bottom is readable
+    #I tried changing the bottom lable angle with below code but lables took up most of the spaceing. 
+    #theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.direction = "horizontal", legend.position = "bottom"))
+    ggplot(ArrivalsDepartures, aes(x=AIRLINE_ID, fill= type)) + 
+      geom_bar(position = "dodge") +
+      labs(x="AIRLINE ID", y = "Number of Flights") 
+    #geom_text(stat = "count", aes(label = ..count.., y = ..count..)) 
+    
+  })
   
   
   #Create table output of April Data table
