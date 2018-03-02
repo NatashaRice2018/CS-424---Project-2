@@ -19,7 +19,21 @@ library(reshape2)
 library(leaflet)
 library(dplyr)
 
-ColNames<- c("FL_DATE","AIRLINE_ID","CARRIER","ORIGIN_AIRPORT_ID","ORIGIN","ORIGIN_CITY_NAME","ORIGIN_STATE_NM","DEST_AIRPORT_ID","DEST_CITY_NAME","DEST_STATE_NM","DEP_TIME","DEP_DELAY","DEP_DELAY_NEW","ARR_TIME","ARR_DELAY","ARR_DELAY_NEW","CANCELLED","CANCELLATION_CODE","DIVERTED","ACTUAL_ELAPSED_TIME","FLIGHTS","DISTANCE","CARRIER_DELAY","WEATHER_DELAY","NAS_DELAY","SECURITY_DELAY","LATE_AIRCRAFT_DELAY")
+ColNames<- c("MONTH","DAY_OF_MONTH","DAY_OF_WEEK","FL_DATE","AIRLINE_ID","CARRIER","FL_NUM","ORIGIN_AIRPORT_ID","ORIGIN_AIRPORT_SEQ_ID","ORIGIN_CITY_MARKET_ID","ORIGIN","ORIGIN_CITY_NAME","ORIGIN_STATE_ABR","DEST_AIRPORT_ID","DEST_AIRPORT_SEQ_ID","DEST_CITY_MARKET_ID","DEST","DEST_CITY_NAME","DEST_STATE_ABR","DEP_TIME","DEP_DELAY","DEP_DELAY_NEW","DEP_DEL15","ARR_TIME","ARR_DELAY","ARR_DELAY_NEW","ARR_DEL15","CANCELLED","CANCELLATION_CODE","DIVERTED","CRS_ELAPSED_TIME","ACTUAL_ELAPSED_TIME","AIR_TIME","FLIGHTS","DISTANCE","DISTANCE_GROUP","CARRIER_DELAY","WEATHER_DELAY","NAS_DELAY","SECURITY_DELAY","LATE_AIRCRAFT_DELAY")
+#Better Way To Read in files
+
+temp <- c("April_flights.cleaned.csv",  "August_flights.cleaned.csv", "December_flights.cleaned.csv","Febuary_flights.cleaned.csv","January_flights.cleaned.csv","June_flights.cleaned.csv", "July_flights.cleaned.csv", "March_flights.cleaned.csv","May_flights.cleaned.csv", "November_flights.cleaned.csv","October_flights.cleaned.csv", "September_flights.cleaned.csv" );
+allData2 <- lapply(temp, read.delim, header = FALSE)
+allData3 <- do.call(rbind, allData2)
+names(allData3)<- ColNames
+allData3$FL_DATE <- as.Date(allData3$FL_DATE, "%Y-%m-%d")
+#get subset of data that landed or took off from ORD or MDW
+allData<-subset(allData3, allData3$ORIGIN_AIRPORT_ID == 13930 | allData3$DEST_AIRPORT_ID == 13930 | allData3$ORIGIN_AIRPORT_ID == 13232 | allData3$DEST_AIRPORT_ID == 13232 )
+
+
+
+
+#Origional File read method
 AprilData<- read.table(file = "April_flights.cleaned.csv", header = FALSE,sep = '\t') 
 names(AprilData)<- ColNames
 AugustData<- read.table(file = "August_flights.cleaned.csv", header = FALSE,sep = '\t') 
@@ -49,6 +63,41 @@ allData <- rbind(AprilData, AugustData, DecemberData, FebuaryData, JanuaryData, 
 #temp = list.files(pattern="*.csv")
 #allData2 <- lapply(temp, read.delim, header = FALSE)
 #allData3 <- do.call(rbind, allData2)
+```
+
+
+
+We will be using August and O'Hare to create functioins, modularity will be added later.
+MDW = 13232
+ORD = 13930
+
+```{r}
+#Get flights with Arrivals in Selected airports and mark them as Arrivals
+Departures<-subset(AugustData, AugustData$ORIGIN_AIRPORT_ID == 13930)
+Departures$type = "Departure"
+#Get all departures at selected airports and mark them as departures
+Arrivals<-subset(AugustData, AugustData$DEST_AIRPORT_ID == 13930)
+Arrivals$type= "Arrival"
+
+ArrivalsDepartures = rbind(Arrivals, Departures)
+
+#Bar Plot - made with the Airporit ID so that the bottom is readable
+#I tried changing the bottom lable angle with below code but lables took up most of the spaceing. 
+#theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.direction = "horizontal", legend.position = "bottom"))
+ggplot(ArrivalsDepartures, aes(x=AIRLINE_ID, fill= type)) + 
+  geom_bar(position = "dodge") +
+  labs(x="AIRLINE ID", y = "Number of Flights") 
+  #geom_text(stat = "count", aes(label = ..count.., y = ..count..)) 
+  
+#Table
+DT::datatable({
+ tempF <-data.frame(Departures$CARRIER,Departures$AIRLINE_ID)
+ Flights <- as.data.frame(table(tempF[AIRLINE_ID], dnn = list("Flights")), responseName = "Count")
+}, 
+    options = list(searching = FALSE, pageLength = 7, lengthChange = FALSE, order = list(list(2, 'desc'))
+    ))
+  
+
 ```
 
 
