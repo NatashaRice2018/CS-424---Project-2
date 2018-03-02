@@ -30,10 +30,17 @@ names(allData2)<-ColNames
 
 allData2$ARR_TIME <- sprintf("%04d", allData2$ARR_TIME)
 allData2$ARR_TIME_new <- as.POSIXct(paste(allData2$FL_DATE, allData2$ARR_TIME), format = "%Y-%m-%d %H%M" )
+allData2$DEP_TIME_new <- as.POSIXct(paste(allData2$FL_DATE, allData2$DEP_TIME), format = "%Y-%m-%d %H%M" )
 
 allData2$hour <- lubridate::hour( allData2$ARR_TIME_new)
 allData2$day <- lubridate::day( allData2$ARR_TIME_new)
-allData2$week <- lubridate::week( allData2$ARR_TIME_new)
+allData2$weekday <- weekdays( allData2$ARR_TIME_new)
+
+allData2$hour_dep <- hour(allData2$DEP_TIME_new)
+allData2$weekday_dep <- weekdays(allData2$DEP_TIME_new)
+
+
+
 
 to12hour <- function(v){ 
   if (is.POSIXct(v)==TRUE){
@@ -86,7 +93,7 @@ ui <- dashboardPage(
                 box(
                   selectInput("Airport","Select airport:",choices=loc,selected='MDW')),
                 
-                box(title = "total number of departures and arrivals", solidHeader = TRUE, status = "primary", width = 12,
+                box(title = "total number of departures and arrivals for airlines", solidHeader = TRUE, status = "primary", width = 12,
                     
                     dataTableOutput("tab1")
                     
@@ -95,16 +102,20 @@ ui <- dashboardPage(
                 
               ), 
               fluidRow(
-                box(title = "departures for each hour of the day ", solidHeader = TRUE, status = "primary", width = 12,
+                box(title = "the total number of departures and total number of arrivals for each hour", solidHeader = TRUE, status = "primary", width = 12,
                     
                     dataTableOutput("tab2")
                     
                 ),
-                box(title = "arrivals for each hour of the day ", solidHeader = TRUE, status = "primary", width = 12,
+                box(title = "the total number of departures and total number of arrivals for each weekday", solidHeader = TRUE, status = "primary", width = 12,
                     
                     dataTableOutput("tab3")
                     
-                )
+                ),
+                box(title = "delay for each hour", solidHeader = TRUE, status = "primary",width = 12,
+                    dataTableOutput("tab4")),
+                box(title = "table showing the number of flights for the most common 15 airports ", solidHeader = TRUE, status = "primary",width = 12,
+                    dataTableOutput("tab5"))
               ),
               
               fluidRow(
@@ -148,13 +159,15 @@ server <- function(input, output) {
     paste("You chose Month:", input$Month, "and Airport:", input$Airport)
   })
   
-  #tab1 show total # of depature and arrival of airport
+  #table and chart showing the total number of departures and total number of arrivals for all of the domestic airlines
   output$tab1 <-DT::renderDataTable(
     DT::datatable({
       justOneMonthReactive <- justOneMonthReactive()
-      n_arrival <- group_by(justOneMonthReactive,DEST)  %>% select(DEST,ORIGIN,ORIGIN_STATE_NM, DEST_STATE_NM ) %>% filter(DEST==input$Airport && ORIGIN_STATE_NM %in% state.name && DEST_STATE_NM %in% state.name) %>% summarise(number_arrival=n())
-      n_dep <- group_by(justOneMonthReactive,ORIGIN)  %>% select(ORIGIN,DEST,ORIGIN_STATE_NM, DEST_STATE_NM) %>% filter(ORIGIN==input$Airport && ORIGIN_STATE_NM %in% state.name && DEST_STATE_NM %in% state.name) %>% summarise(number_dep=n())
-      data1 <- as.data.frame(cbind(n_arrival,n_dep))
+      n_arrival <- group_by(justOneMonthReactive,CARRIER)  %>% select(DEST,CARRIER ) %>% filter(DEST==input$Airport) %>% summarise(number_arrival=n())
+      n_dep <- group_by(justOneMonthReactive,CARRIER)  %>% select(ORIGIN,CARRIER) %>% filter(ORIGIN==input$Airport) %>% summarise(number_dep=n())
+      data1 <- merge(n_arrival,n_dep,all=TRUE)
+      data1[is.na(data1)] <- 0
+      data1 <- as.data.frame(data1)
       data1
     },
     options = list(pageLength = 8)
@@ -162,31 +175,77 @@ server <- function(input, output) {
     
   )
   
+ # table and chart showing the total number of departures and total number of arrivals for each hour of the day across that month (i.e. how many from 9am to 10am summed over every day of that month)
   output$tab2 <-DT::renderDataTable(
     DT::datatable({
       justOneMonthReactive <- justOneMonthReactive()
       
-      dep_day_hour <- group_by(justOneMonthReactive,day,hour)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN==input$Airport ) %>% summarise(number_dep=n())
-      data2 <- as.data.frame(dep_day_hour)
+      dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN==input$Airport ) %>% summarise(number_dep=n())
+      arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST==input$Airport) %>% summarise(number_arrival=n())
+      colnames(dep_hour)<-c("hour","number_dep")
+      data2 <- merge(dep_hour,arr_hour,all=TRUE)
+      data2 <- subset(data2,!is.na(data2$hour))
+      data2[is.na(data2)] <- 0
+      data2 <- as.data.frame(data2)
       data2
+      
     },
     options = list(pageLength = 8)
     )
     
   )
+
+  # the total number of departures and total number of arrivals for each day of the week across that month
   
   output$tab3 <-DT::renderDataTable(
     DT::datatable({
       justOneMonthReactive <- justOneMonthReactive()
       
-      arr_day_hour <- group_by(justOneMonthReactive,day,hour)  %>% select(DEST) %>% filter(DEST==input$Airport) %>% summarise(number_arrival=n())
-      data3 <- as.data.frame(arr_day_hour)
+      dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN==input$Airport ) %>% summarise(number_dep=n())
+      arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST==input$Airport) %>% summarise(number_arrival=n())
+      colnames(dep_weekday)<-c("weekday","number_dep")
+      data3 <- merge(dep_weekday,arr_weekday,all=TRUE)
+      data3 <- subset(data3,!is.na(data3$weekday))
+      data3[is.na(data3)] <- 0
+      data3 <- as.data.frame(data3)
       data3
+      
     },
     options = list(pageLength = 8)
     )
     
   )
+  #delay for each hour
+  
+  output$tab4<- DT::renderDataTable(
+    DT::datatable({
+      
+      justOneMonthReactive <- justOneMonthReactive()
+      MDW_delay_day_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&& ORIGIN_AIRPORT_ID==input$Airport ) %>% summarise(number_arrival_delay=n())
+    })
+  )
+  
+  # table showing the number of flights for the most common 15 destination and airports airports for selected airport
+  output$tab5<- DT::renderDataTable(
+    DT::datatable({
+      
+      justOneMonthReactive <- justOneMonthReactive()
+      
+      most_common_15_destinations <- group_by(justOneMonthReactive,DEST)  %>% select(ORIGIN) %>% filter(ORIGIN == input$Airport) %>% summarise(number_of_dest_flights=n()) %>% arrange(desc(number_of_dest_flights)) %>% top_n(15)
+      
+
+      
+      # table showing the number of flights for the most common 15 arrival airports (depart: other airport, arrive: MDW) 
+      most_common_15_arrivals <- group_by(justOneMonthReactive,ORIGIN)  %>% select(DEST) %>% filter(DEST == input$Airport ) %>% summarise(number_of_arr_flights=n()) %>% arrange(desc(number_of_arr_flights)) %>% top_n(15)
+      most_common_15_arrivals$Rank <- dense_rank(desc(most_common_15_arrivals$number_of_arr_flights)) 
+      most_common_15_destinations$Rank <- dense_rank(desc(most_common_15_destinations$number_of_dest_flights))
+      
+      data5 <- as.data.frame(merge(most_common_15_arrivals,most_common_15_destinations,all=TRUE))
+      data5
+      
+    })
+  )
+  
   
   
   #Create table output of April Data table
