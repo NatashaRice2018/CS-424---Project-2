@@ -33,10 +33,13 @@ allData2$ARR_TIME_new <- as.POSIXct(paste(allData2$FL_DATE, allData2$ARR_TIME), 
 allData2$DEP_TIME_new <- as.POSIXct(paste(allData2$FL_DATE, allData2$DEP_TIME), format = "%Y-%m-%d %H%M" )
 
 allData2$hour <- lubridate::hour( allData2$ARR_TIME_new)
+#allData2$hour <-paste(allData2$hour,":00",sep = "")
+
 allData2$day <- lubridate::day( allData2$ARR_TIME_new)
 allData2$weekday <- weekdays( allData2$ARR_TIME_new)
 
 allData2$hour_dep <- hour(allData2$DEP_TIME_new)
+#allData2$hour_dep <-paste(allData2$hour_dep,":00",sep = "")
 allData2$weekday_dep <- weekdays(allData2$DEP_TIME_new)
 
 
@@ -61,6 +64,7 @@ colnames(airport_code_name)<-c("DEST_AIRPORT_ID","DEST")
 allData2 <- merge(allData2,airport_code_name)
 
 months <- c(1:12)
+t<-c("24 hour","12 hour am/pm")
 loc <- c('MDW','ORD')
 # Define UI for application that draws a histogram
 ui <- dashboardPage(
@@ -86,7 +90,9 @@ ui <- dashboardPage(
       tabItem("dashboard",
               
               fluidRow(
-                
+                box(
+                  selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour')
+                ),
                 box(
                   selectInput("Month", "Select the month to visualize", choices=months, selected = 8)
                   ),
@@ -153,6 +159,7 @@ server <- function(input, output) {
   # increase the default font size
   
   theme_set(theme_grey(base_size = 18)) 
+  
 
   justOneMonthReactive <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$Month)})
   output$result <- renderText({
@@ -176,9 +183,11 @@ server <- function(input, output) {
   )
   
  # table and chart showing the total number of departures and total number of arrivals for each hour of the day across that month (i.e. how many from 9am to 10am summed over every day of that month)
-  output$tab2 <-DT::renderDataTable(
+ 
+   output$tab2 <-DT::renderDataTable(
     DT::datatable({
       justOneMonthReactive <- justOneMonthReactive()
+      
       
       dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN==input$Airport ) %>% summarise(number_dep=n())
       arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST==input$Airport) %>% summarise(number_arrival=n())
@@ -186,7 +195,16 @@ server <- function(input, output) {
       data2 <- merge(dep_hour,arr_hour,all=TRUE)
       data2 <- subset(data2,!is.na(data2$hour))
       data2[is.na(data2)] <- 0
+      c <- data2$hour
+      #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
+      if (input$Time!="24 hour"){
+        c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
+      } else {
+        c<-paste(c,":00",sep="")
+      }
+      data2$hour <- c
       data2 <- as.data.frame(data2)
+      
       data2
       
     },
