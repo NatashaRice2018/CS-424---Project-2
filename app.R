@@ -127,8 +127,8 @@ ui <- dashboardPage(
                     dataTableOutput("tab5"))
               ),
               fluidRow(
-                box( title = "Total number of departures/arrivals per month", solidHeader = TRUE, status = "primary", width = 12,
-                     plotOutput("Bar1")
+                box( title = "Total number of departures/arrivals by time", solidHeader = TRUE, status = "primary", width = 12,
+                     plotOutput("BarByTime")
                 )
               ), 
               
@@ -168,6 +168,7 @@ server <- function(input, output) {
   
   theme_set(theme_grey(base_size = 18)) 
   
+  colorsAD <- c('#334464','#9DADBF')
   
   justOneMonthReactive <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$Month)})
   output$result <- renderText({
@@ -291,28 +292,34 @@ server <- function(input, output) {
   )
   
   
-  output$Bar1 <- renderPlot({
+  output$BarByTime <- renderPlot({
     justOneMonthReactive <- justOneMonthReactive()
     
-    #Get flights with Arrivals in Selected airports and mark them as Arrivals
-    Departures<-subset(justOneMonthReactive, justOneMonthReactive$ORIGIN_AIRPORT_ID == 13930)
-    Departures$type = "Departure"
-    #Get all departures at selected airports and mark them as departures
-    Arrivals<-subset(justOneMonthReactive, justOneMonthReactive$DEST_AIRPORT_ID == 13930)
-    Arrivals$type= "Arrival"
     
-    ArrivalsDepartures = rbind(Arrivals, Departures)
+    dep_hour <- group_by(justOneMonthReactive,hour)  %>% select(ORIGIN) %>% filter(ORIGIN==input$Airport ) %>% summarise(count=n())
+    dep_hour$type = "Departure"
+    arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST==input$Airport) %>% summarise(count=n())
+    arr_hour$type = "Arrival"
+    data2 <- merge(dep_hour,arr_hour,all=TRUE)
+    data2 <- subset(data2,!is.na(data2$hour))
+    c <- data2$hour
+    #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
+    if (input$Time!="24 hour"){
+      c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
+    } else {
+      c<-paste(c,":00",sep="")
+    }
+    data2$hour <- c
+    data2 <- as.data.frame(data2)
     
-    #Bar Plot - made with the Airporit ID so that the bottom is readable
-    #I tried changing the bottom lable angle with below code but lables took up most of the spaceing. 
-    #theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.direction = "horizontal", legend.position = "bottom"))
-    ggplot(ArrivalsDepartures, aes(x=AIRLINE_ID, fill= type)) + 
-      geom_bar(position = "dodge") +
-      labs(x="AIRLINE ID", y = "Number of Flights") 
-    #geom_text(stat = "count", aes(label = ..count.., y = ..count..)) 
+    ggplot(data2, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Hour", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
     
   })
-  
   
   #Create table output of April Data table
   
