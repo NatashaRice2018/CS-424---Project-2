@@ -214,7 +214,7 @@ server <- function(input, output) {
       data2 <- merge(dep_hour,arr_hour,all=TRUE)
       data2 <- subset(data2,!is.na(data2$hour))
       data2[is.na(data2)] <- 0
-      data4$hour<-switch_hour(data4$hour)
+      data2$hour<-switch_hour(data2$hour)
       data2 <- as.data.frame(data2)
       
       data2
