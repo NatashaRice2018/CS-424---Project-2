@@ -436,10 +436,7 @@ server <- function(input, output) {
     most_common_15_destinations <- most_common_15_destinations[-c(16), ]
     data5 <- as.data.frame(merge(most_common_15_arrivals,most_common_15_destinations,all=TRUE))
     
-    temp <- table (data5$Rank)
-    ranks  <- names(temp)[order(temp)]
-    
-    data5$Rank <- factor(data5$Rank, levels = ranks)
+    data5$LOC <- reorder(data5$LOC, -data5$count)
     
     
     ggplot(data5, aes(x= LOC,y = count , fill=type)) + 
