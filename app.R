@@ -164,7 +164,8 @@ ui <- dashboardPage(
               
       ), #end of tab item
       
-      tabItem("about",
+
+            tabItem("about",
               
               h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddarth Basu"),
               
@@ -412,6 +413,42 @@ server <- function(input, output) {
                 position = position_dodge(0.9), size=3.5)
   })
   
+  
+  output$BarTop10 <- renderPlot({
+    justOneMonthReactive <- justOneMonthReactive()
+    
+    most_common_15_destinations <- group_by(justOneMonthReactive,DEST)  %>% select(ORIGIN) %>% filter(ORIGIN == input$Airport) %>% summarise(count=n()) %>% arrange(desc(count)) %>% top_n(15)
+    
+    
+    
+    # table showing the number of flights for the most common 15 arrival airports (depart: other airport, arrive: MDW) 
+    most_common_15_arrivals <- group_by(justOneMonthReactive,ORIGIN)  %>% select(DEST) %>% filter(DEST == input$Airport ) %>% summarise(count=n()) %>% arrange(desc(count)) %>% top_n(15)
+    most_common_15_arrivals$Rank <- dense_rank(desc(most_common_15_arrivals$count)) 
+    most_common_15_destinations$Rank <- dense_rank(desc(most_common_15_destinations$count))
+    
+    most_common_15_destinations$type = "Departure"
+    most_common_15_arrivals$type = "Arrival"
+    
+    colnames(most_common_15_destinations)[colnames(most_common_15_destinations)=="DEST"] <- "LOC"
+    colnames(most_common_15_arrivals)[colnames(most_common_15_arrivals)=="ORIGIN"] <- "LOC"
+    
+    #cheap fix- there is a 16th airport in the dataset so we'll remove it.
+    most_common_15_destinations <- most_common_15_destinations[-c(16), ]
+    data5 <- as.data.frame(merge(most_common_15_arrivals,most_common_15_destinations,all=TRUE))
+    
+    temp <- table (data5$Rank)
+    ranks  <- names(temp)[order(temp)]
+    
+    data5$Rank <- factor(data5$Rank, levels = ranks)
+    
+    
+    ggplot(data5, aes(x= LOC,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Airport", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+  })
   #Create table output of April Data table
   
   output$aprilFlightsTable <- DT::renderDataTable(
