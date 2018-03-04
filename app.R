@@ -70,7 +70,9 @@ months <- c(1:12)
 t<-c("24 hour","12 hour am/pm")
 loc <- c('MDW','ORD')
 # Define UI for application that draws a histogram
-ui <- dashboardPage(
+ui <- 
+  
+  dashboardPage( 
   
   dashboardHeader(title = "CS 424: Project 2"),
   
@@ -80,13 +82,24 @@ ui <- dashboardPage(
       
       menuItem("Dashboard", tabName="dashboard"),
       
-      menuItem("About", tabName="about")
+      menuItem("About", tabName="about"),
+      menuItem("Arrivals & Departures", tabName="arrivals_departures"),
+      menuItem("Arrivals & Departures: Airlines", tabName="arrivals_departures_airlines"),
+      menuItem("Delays", tabName="delays"),
+      menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
+      menuItem("Top Airports", tabName="top_airports"),
+      menuItem("Top Airlines", tabName="top_airlines"),
+      menuItem("10 Interesting Days", tabName="interesting_days")
       
     )
     
   ),
   
   dashboardBody(
+    
+    tags$head(
+      tags$link(rel="stylesheet", type="text/css", href="custom.css")
+    ),
     
     tabItems(
       
@@ -175,8 +188,8 @@ ui <- dashboardPage(
       
     ) # end of TabItems 
     
-  ) # end of DashboardBody
-  
+  ), # end of DashboardBody
+  skin = c("black")
 ) # end of DashboardPage
 
 
