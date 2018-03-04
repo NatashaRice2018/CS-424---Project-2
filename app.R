@@ -127,8 +127,28 @@ ui <- dashboardPage(
                     dataTableOutput("tab5"))
               ),
               fluidRow(
-                box( title = "Total number of departures/arrivals per month", solidHeader = TRUE, status = "primary", width = 12,
-                     plotOutput("Bar1")
+                box( title = "Total number of departures/arrivals", solidHeader = TRUE, status = "primary", width = 12,
+                     plotOutput("TotalDepAri")
+                )
+              ),
+              fluidRow(
+                box( title = "Total number of departures/arrivals by time", solidHeader = TRUE, status = "primary", width = 12,
+                     plotOutput("BarByTime")
+                )
+              ), 
+              fluidRow(
+                box( title = "Total number of departures/arrivals by Day of Week", solidHeader = TRUE, status = "primary", width = 12,
+                     plotOutput("BarByWeekday")
+                )
+              ), 
+              fluidRow(
+                box( title = "Total number of delay by hour", solidHeader = TRUE, status = "primary", width = 12,
+                     plotOutput("BarDelaybyHour")
+                )
+              ), 
+              fluidRow(
+                box( title = "Top 10 Airports", solidHeader = TRUE, status = "primary", width = 12,
+                     plotOutput("BarTop10")
                 )
               ), 
               
@@ -143,6 +163,7 @@ ui <- dashboardPage(
               )
               
       ), #end of tab item
+      
       
       tabItem("about",
               
@@ -168,6 +189,7 @@ server <- function(input, output) {
   
   theme_set(theme_grey(base_size = 18)) 
   
+  colorsAD <- c('#334464','#9DADBF')
   
   justOneMonthReactive <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$Month)})
   output$result <- renderText({
@@ -179,10 +201,23 @@ server <- function(input, output) {
     #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
     if (input$Time!="24 hour"){
       c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
+      #code currently has a 0:00am - we need to change that to 12 am.
+      c[c == "0:00 AM"] <- "12:00 AM"
+      c[c == "0:00 PM"] <- "12:00 PM"
     } else {
       c<-paste(c,":00",sep="")
     }
     c
+  }
+  
+  set_time_factor<-function(x)
+  {
+    time <- x
+    
+    temp <- unique(time)
+    time <- factor(time, levels = temp)
+    
+    time
   }
   
   #table and chart showing the total number of departures and total number of arrivals for all of the domestic airlines
@@ -238,10 +273,12 @@ server <- function(input, output) {
       data3 <- subset(data3,!is.na(data3$weekday))
       data3[is.na(data3)] <- 0
       data3 <- as.data.frame(data3)
+      #reodder days of week
+      data3$weekday <- factor(data3$weekday, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
       data3
       
     },
-    options = list(pageLength = 8)
+    options = list(pageLength = 8, order = list(list(1, 'asc')))
     )
     
   )
@@ -290,30 +327,134 @@ server <- function(input, output) {
     })
   )
   
-  
-  output$Bar1 <- renderPlot({
+  output$TotalDepAri<- renderPlot({
+    
     justOneMonthReactive <- justOneMonthReactive()
+    n_arrival <- group_by(justOneMonthReactive,CARRIER)  %>% select(DEST,CARRIER ) %>% filter(DEST==input$Airport) %>% summarise(Count=n())
+    n_arrival$type = "Departure"
+    n_dep <- group_by(justOneMonthReactive,CARRIER)  %>% select(ORIGIN,CARRIER) %>% filter(ORIGIN==input$Airport) %>% summarise(Count=n())
+    n_dep$type = "Arrival"
+    data1 <- merge(n_arrival,n_dep,all=TRUE)
+    data1[is.na(data1)] <- 0
+    data1 <- as.data.frame(data1)
     
-    #Get flights with Arrivals in Selected airports and mark them as Arrivals
-    Departures<-subset(justOneMonthReactive, justOneMonthReactive$ORIGIN_AIRPORT_ID == 13930)
-    Departures$type = "Departure"
-    #Get all departures at selected airports and mark them as departures
-    Arrivals<-subset(justOneMonthReactive, justOneMonthReactive$DEST_AIRPORT_ID == 13930)
-    Arrivals$type= "Arrival"
     
-    ArrivalsDepartures = rbind(Arrivals, Departures)
-    
-    #Bar Plot - made with the Airporit ID so that the bottom is readable
-    #I tried changing the bottom lable angle with below code but lables took up most of the spaceing. 
-    #theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.direction = "horizontal", legend.position = "bottom"))
-    ggplot(ArrivalsDepartures, aes(x=AIRLINE_ID, fill= type)) + 
-      geom_bar(position = "dodge") +
-      labs(x="AIRLINE ID", y = "Number of Flights") 
-    #geom_text(stat = "count", aes(label = ..count.., y = ..count..)) 
+    ggplot(data1, aes(x=CARRIER,y = Count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Ariline", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=Count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
     
   })
   
+  output$BarByTime <- renderPlot({
+    justOneMonthReactive <- justOneMonthReactive()
+    
+    
+    dep_hour <- group_by(justOneMonthReactive,hour)  %>% select(ORIGIN) %>% filter(ORIGIN==input$Airport ) %>% summarise(count=n())
+    dep_hour$type = "Departure"
+    arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST==input$Airport) %>% summarise(count=n())
+    arr_hour$type = "Arrival"
+    data2 <- merge(dep_hour,arr_hour,all=TRUE)
+    data2 <- subset(data2,!is.na(data2$hour))
+    data2$hour<-switch_hour(data2$hour)
+    #set a factor for time baised on what clock we are in
+    data2$hour <- set_time_factor(data2$hour)
+    data2 <- as.data.frame(data2)
+    
+    ggplot(data2, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Hour", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+    
+  })
   
+  output$BarByWeekday<- renderPlot({
+    justOneMonthReactive <- justOneMonthReactive()
+    
+    dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN==input$Airport ) %>% summarise(Count=n())
+    dep_weekday$type = "Departure"
+    arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST==input$Airport) %>% summarise(Count=n())
+    arr_weekday$type = "Arrival"
+    colnames(dep_weekday)<-c("weekday","Count", "type")
+    data3 <- merge(dep_weekday,arr_weekday,all=TRUE)
+    data3 <- subset(data3,!is.na(data3$weekday))
+    data3[is.na(data3)] <- 0
+    data3 <- as.data.frame(data3)
+    data3$weekday <- factor(data3$weekday, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+    
+    
+    ggplot(data3, aes(x=weekday,y = Count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Day", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=Count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+    
+  })
+  
+  output$BarDelaybyHour<- renderPlot({
+    justOneMonthReactive <- justOneMonthReactive()
+    
+    #MDW_delay_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&&(ORIGIN_AIRPORT_ID==13232 | DEST_AIRPORT_ID == 13232) ) %>% summarise(number_arrival_delay=n())
+    delay_arr_hour <- group_by(justOneMonthReactive,hour) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST == input$Airport ) %>% summarise(count=n())
+    delay_arr_hour$type = "Departure"
+    delay_dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ORIGIN ==input$Airport & DEP_DELAY <0 ) %>% summarise(count=n())
+    delay_dep_hour$type = "Arrival"
+    colnames(delay_dep_hour)<-c("hour","count", "type")
+    data4 <- merge(delay_arr_hour,delay_dep_hour,all=TRUE)
+    data4 <- subset(data4,!is.na(data4$hour))
+    data4[is.na(data4)] <- 0
+    data4$hour<-switch_hour(data4$hour)
+    data4$data4 <- set_time_factor(data2$hour)
+    data4 <- as.data.frame(data4)
+    
+    
+    
+    ggplot(data4, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Time", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+  })
+  
+  
+  output$BarTop10 <- renderPlot({
+    justOneMonthReactive <- justOneMonthReactive()
+    
+    most_common_15_destinations <- group_by(justOneMonthReactive,DEST)  %>% select(ORIGIN) %>% filter(ORIGIN == input$Airport) %>% summarise(count=n()) %>% arrange(desc(count)) %>% top_n(15)
+    
+    
+    
+    # table showing the number of flights for the most common 15 arrival airports (depart: other airport, arrive: MDW) 
+    most_common_15_arrivals <- group_by(justOneMonthReactive,ORIGIN)  %>% select(DEST) %>% filter(DEST == input$Airport ) %>% summarise(count=n()) %>% arrange(desc(count)) %>% top_n(15)
+    most_common_15_arrivals$Rank <- dense_rank(desc(most_common_15_arrivals$count)) 
+    most_common_15_destinations$Rank <- dense_rank(desc(most_common_15_destinations$count))
+    
+    most_common_15_destinations$type = "Departure"
+    most_common_15_arrivals$type = "Arrival"
+    
+    colnames(most_common_15_destinations)[colnames(most_common_15_destinations)=="DEST"] <- "LOC"
+    colnames(most_common_15_arrivals)[colnames(most_common_15_arrivals)=="ORIGIN"] <- "LOC"
+    
+    #cheap fix- there is a 16th airport in the dataset so we'll remove it.
+    most_common_15_destinations <- most_common_15_destinations[-c(16), ]
+    data5 <- as.data.frame(merge(most_common_15_arrivals,most_common_15_destinations,all=TRUE))
+    
+    data5$LOC <- reorder(data5$LOC, -data5$count)
+    
+    
+    ggplot(data5, aes(x= LOC,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Airport", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+  })
   #Create table output of April Data table
   
   output$aprilFlightsTable <- DT::renderDataTable(
