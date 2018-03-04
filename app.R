@@ -201,10 +201,23 @@ server <- function(input, output) {
     #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
     if (input$Time!="24 hour"){
       c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
+      #code currently has a 0:00am - we need to change that to 12 am.
+      c[c == "0:00 AM"] <- "12:00 AM"
+      c[c == "0:00 PM"] <- "12:00 PM"
     } else {
       c<-paste(c,":00",sep="")
     }
     c
+  }
+  
+  set_time_factor<-function(x)
+  {
+    time <- x
+    
+    temp <- unique(time)
+    time <- factor(time, levels = temp)
+    
+    time
   }
   
   #table and chart showing the total number of departures and total number of arrivals for all of the domestic airlines
@@ -345,14 +358,9 @@ server <- function(input, output) {
     arr_hour$type = "Arrival"
     data2 <- merge(dep_hour,arr_hour,all=TRUE)
     data2 <- subset(data2,!is.na(data2$hour))
-    c <- data2$hour
-    #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
-    if (input$Time!="24 hour"){
-      c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
-    } else {
-      c<-paste(c,":00",sep="")
-    }
-    data2$hour <- c
+    data2$hour<-switch_hour(data2$hour)
+    #set a factor for time baised on what clock we are in
+    data2$hour <- set_time_factor(data2$hour)
     data2 <- as.data.frame(data2)
     
     ggplot(data2, aes(x=hour,y = count , fill=type)) + 
@@ -401,6 +409,7 @@ server <- function(input, output) {
     data4 <- subset(data4,!is.na(data4$hour))
     data4[is.na(data4)] <- 0
     data4$hour<-switch_hour(data4$hour)
+    data4$hour <- set_time_factor(data4$hour)
     data4 <- as.data.frame(data4)
     
     
