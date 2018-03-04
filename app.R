@@ -115,11 +115,6 @@ ui <-
                 box(
                   selectInput("Airport","Select airport:",choices=loc,selected='MDW')),
                 
-                box(title = "total number of departures and arrivals for airlines", solidHeader = TRUE, status = "primary", width = 12,
-                    
-                    dataTableOutput("tab1")
-                    
-                ),
                 textOutput("result")
                 
               ), 
@@ -178,12 +173,26 @@ ui <-
       ), #end of tab item
       
 
-            tabItem("about",
-              
-              h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddarth Basu"),
-              
-              a("Link to project website", href="https://guillermokrh.github.io/CS-424---Project-2-Website/")
-              
+      tabItem("about",
+        
+        h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddarth Basu"),
+        
+        a("Link to project website", href="https://guillermokrh.github.io/CS-424---Project-2-Website/")
+        
+      ),
+      
+      tabItem("arrivals_departures",
+                fluidRow(
+                  
+                  box(title = "total number of departures and arrivals for airlines", solidHeader = TRUE, status = "primary", width = 12,
+                      
+                      dataTableOutput("tab1")
+                      
+                  )
+                  
+                )
+                
+        
       )
       
     ) # end of TabItems 

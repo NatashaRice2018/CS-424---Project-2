@@ -1,6 +1,16 @@
 
 .main-header .logo {
-    font-family: "Georgia", Times, "Times New Roman", serif;
     font-weight: bold;
     font-size: 24px;
 }
+
+.box.box-solid.box-primary {
+  border: 1px solid black;
+}
+
+.box.box-solid.box-primary > .box-header {
+    color: #fff;
+    background: #333;
+    background-color: #333
+}
+
