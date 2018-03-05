@@ -409,7 +409,7 @@ server <- function(input, output) {
     data4 <- subset(data4,!is.na(data4$hour))
     data4[is.na(data4)] <- 0
     data4$hour<-switch_hour(data4$hour)
-    data4$data4 <- set_time_factor(data2$hour)
+    data4$hour <- set_time_factor(data2$hour)
     data4 <- as.data.frame(data4)
     
     
