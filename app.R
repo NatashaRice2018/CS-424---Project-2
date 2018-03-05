@@ -73,156 +73,150 @@ loc <- c('MDW','ORD')
 ui <- 
   
   dashboardPage( 
+  
+  dashboardHeader(title = "CS 424: Project 2"),
+  
+  dashboardSidebar(
     
-    dashboardHeader(title = "CS 424: Project 2"),
+    sidebarMenu(
+      menuItem("About", tabName="about"),
+      menuItem("Arrivals & Departures", tabName="arrivals_departures"),
+      menuItem("Arrivals & Departures: Airlines", tabName="arrivals_departures_airlines"),
+      menuItem("Delays", tabName="delays"),
+      # menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
+      menuItem("Top Airports", tabName="top_airports"),
+      menuItem("Settings", tabName="dashboard")
+      # menuItem("Top Airlines", tabName="top_airlines"),
+      # menuItem("10 Interesting Days", tabName="interesting_days")
+      
+    )
     
-    dashboardSidebar(
-      
-      sidebarMenu(
-        menuItem("About", tabName="about"),
-        menuItem("Arrivals & Departures", tabName="arrivals_departures"),
-        menuItem("Arrivals & Departures: Airlines", tabName="arrivals_departures_airlines"),
-        menuItem("Delays", tabName="delays"),
-        # menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
-        menuItem("Top Airports", tabName="top_airports"),
-        menuItem("Settings", tabName="dashboard")
-        # menuItem("Top Airlines", tabName="top_airlines"),
-        # menuItem("10 Interesting Days", tabName="interesting_days")
-        
-      )
-      
+  ),
+  
+  dashboardBody(
+    
+    tags$head(
+      tags$link(rel="stylesheet", type="text/css", href="custom.css")
     ),
     
-    dashboardBody(
+    tabItems(
       
-      tags$head(
-        tags$link(rel="stylesheet", type="text/css", href="custom.css")
+      tabItem("dashboard",
+              
+              fluidRow(
+                box(
+                  selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour'), width=4
+                ),
+                
+                textOutput("result")
+              )
+              
+      ), #end of tab item
+      
+      tabItem("about",
+        h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddarth Basu"),
+        a("Link to project website", href="https://guillermokrh.github.io/CS-424---Project-2-Website/")
+      ),
+     
+      tabItem("arrivals_departures",
+              fluidRow(
+                box(
+                  selectInput("arrivals_departures_month", "Select the month to visualize", choices=months, selected = 8), width=3
+                ),
+                box(
+                  selectInput("arrivals_departures_airport","Select airport:",choices=loc,selected='MDW'), width=9
+                ),
+                
+                textOutput("arrivals_departures_result")
+              ),
+              fluidRow(
+                box(title = "Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 3,
+                    
+                    dataTableOutput("tab2")
+                    
+                ),
+                box( title = "Total number of departures/arrivals by time", solidHeader = TRUE, status = "primary", width = 9,
+                     plotOutput("BarByTime")
+                )
+              ),
+              fluidRow(
+                box(title = "Arrivals and Departures by Weekday", solidHeader = TRUE, status = "primary", width = 3,
+                    dataTableOutput("tab3")
+                ),
+                box( title = "Total number of departures/arrivals by Day of Week", solidHeader = TRUE, status = "primary", width = 9,
+                     plotOutput("BarByWeekday")
+                )
+              )
       ),
       
-      tabItems(
-        
-        tabItem("dashboard",
-                
+      tabItem("arrivals_departures_airlines",              
+              
                 fluidRow(
-                  box(
-                    selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour'), width=4
-                  ),
-                  
-                  textOutput("result")
-                )
-                
-        ), #end of tab item
-        
-        tabItem("about",
-                h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddarth Basu"),
-                a("Link to project website", href="https://guillermokrh.github.io/CS-424---Project-2-Website/")
-        ),
-        
-        tabItem("arrivals_departures",
-                fluidRow(
-                  box(
-                    selectInput("arrivals_departures_month", "Select the month to visualize", choices=months, selected = 8), width=3
-                  ),
-                  box(
-                    selectInput("arrivals_departures_airport","Select airport:",choices=loc,selected='MDW'), width=9
-                  ),
-                  
-                  textOutput("arrivals_departures_result")
-                ),
-                fluidRow(
-                  box(title = "Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 12,
+                      box(
+                        selectInput("arrivals_departures_airlines_month", "Select the month to visualize", choices=months, selected = 8)
+                      ),
+                      box(
+                        selectInput("arrivals_departures_airlines_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW')
+                      ),
                       
-                      dataTableOutput("tab2")
-                      
-                  )),
-                fluidRow(
-                  box( title = "Total number of departures/arrivals by time", solidHeader = TRUE, status = "primary", width = 12,
-                       plotOutput("BarByTime")
-                  )
-                ),
-                fluidRow(
-                  box(title = "Arrivals and Departures by Weekday", solidHeader = TRUE, status = "primary", width = 12,
-                      dataTableOutput("tab3")
-                  ),
-                  box( title = "Total number of departures/arrivals by Day of Week", solidHeader = TRUE, status = "primary", width = 12,
-                       plotOutput("BarByWeekday")
-                  )
-                )
-        ),
-        
-        tabItem("arrivals_departures_airlines",              
+                      textOutput("arrivals_departures_airlines_result")
                 
-                fluidRow(
-                  box(
-                    selectInput("arrivals_departures_airlines_month", "Select the month to visualize", choices=months, selected = 8)
-                  ),
-                  box(
-                    selectInput("arrivals_departures_airlines_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW')
-                  ),
-                  
-                  textOutput("arrivals_departures_airlines_result")
-                  
                 ), 
                 fluidRow(
                   
-                  box(title = "Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 12,
+                  box(title = "Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 6,
                       
                       dataTableOutput("tab1")
                       
-                  )),
-                fluidRow(
-                  box( title = "Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 12,
+                  ),
+                  box( title = "Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 6,
                        plotOutput("TotalDepAri")
                   )
                   
                 )
-        ),
-        tabItem("delays",
-                fluidRow(
-                  box(
-                    selectInput("delays_month", "Select the month to visualize", choices=months, selected = 4), width=4
-                  ),
-                  box(
-                    selectInput("delays_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
-                  )
-                ),
-                fluidRow (
-                  box(title = "Delays Per Hour", solidHeader = TRUE, status = "primary",width = 12,
-                      dataTableOutput("tab4"))
-                  ),
-                fluidRow(
-                  
-                  box( title = "Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 12,
-                       plotOutput("BarDelaybyHour")
+      ),
+      tabItem("delays",
+              fluidRow(
+                    box(
+                      selectInput("delays_month", "Select the month to visualize", choices=months, selected = 4), width=4
+                    ),
+                    box(
+                      selectInput("delays_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
+                    )
+              ),
+              fluidRow (
+                box(title = "Delays Per Hour", solidHeader = TRUE, status = "primary",width = 4,
+                    dataTableOutput("tab4")),
+                
+                box( title = "Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 8,
+                     plotOutput("BarDelaybyHour")
                 )
+              )
+      ),
+      tabItem("top_airports",
+              fluidRow(
+                    box(
+                      selectInput("top_airports_month", "Select the month to visualize", choices=months, selected = 4), width=4
+                    ),
+                    box(
+                      selectInput("top_airports_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
+                    )
+              ),
+              fluidRow( 
+                box(title = "15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 4,
+                    dataTableOutput("tab5")),
+                box( title = "15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
+                     plotOutput("BarTop10")
                 )
-              
-        ),
-        tabItem("top_airports",
-                fluidRow(
-                  box(
-                    selectInput("top_airports_month", "Select the month to visualize", choices=months, selected = 4), width=4
-                  ),
-                  box(
-                    selectInput("top_airports_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=12
-                  )
-                ),
-                fluidRow( 
-                  box(title = "15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 12,
-                      dataTableOutput("tab5"))),
-                fluidRow(
-                  box( title = "15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 12,
-                       plotOutput("BarTop10")
-                  )
-                )
-        )
-        
-        
-      ) # end of TabItems 
+              )
+      )
       
-    ), # end of DashboardBody
-    skin = c("black")
-  ) # end of DashboardPage
+      
+    ) # end of TabItems 
+    
+  ), # end of DashboardBody
+  skin = c("black")
+) # end of DashboardPage
 
 
 # output is a list, as is input
@@ -278,7 +272,7 @@ server <- function(input, output) {
     time
   }
   
-  ####### Arrivals & Departures: Airlines Dashboard Tab
+####### Arrivals & Departures: Airlines Dashboard Tab
   # Table: Departure and Arrival Totals by Airline
   output$tab1 <-DT::renderDataTable(
     DT::datatable({
@@ -322,23 +316,19 @@ server <- function(input, output) {
   })
   
   
-  ########### Arrivals and Departures Tab
+########### Arrivals and Departures Tab
   # Table: The total number of departures and total number of arrivals for each hour of the day across that month
   output$tab2 <-DT::renderDataTable(
     DT::datatable({
       justOneMonthReactive <- arrivalsDeparturesMonth()
       
-      dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport ) %>% summarise(count=n())
-      #dep_hour$type = "Departure"
-      arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(count=n())
-      #arr_hour$type = "Arrival"
+      dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport ) %>% summarise(number_dep=n())
+      arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST==input$arrivals_depatures_airport) %>% summarise(number_arrival=n())
       colnames(dep_hour)<-c("hour","number_dep")
-      colnames(arr_hour)<-c("hour","number_arr")
       data2 <- merge(dep_hour,arr_hour,all=TRUE)
       data2 <- subset(data2,!is.na(data2$hour))
+      data2[is.na(data2)] <- 0
       data2$hour<-switch_hour(data2$hour)
-      #set a factor for time baised on what clock we are in
-      #data2$hour <- set_time_factor(data2$hour)
       data2 <- as.data.frame(data2)
       
       data2
@@ -353,13 +343,10 @@ server <- function(input, output) {
   output$BarByTime <- renderPlot({
     justOneMonthReactive <- arrivalsDeparturesMonth()
     
-    dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport ) %>% summarise(count=n())
-    colnames(dep_hour)[1]<-"hour"
+    dep_hour <- group_by(justOneMonthReactive,hour)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport ) %>% summarise(count=n())
     dep_hour$type = "Departure"
-    
     arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(count=n())
     arr_hour$type = "Arrival"
-    
     data2 <- merge(dep_hour,arr_hour,all=TRUE)
     data2 <- subset(data2,!is.na(data2$hour))
     data2$hour<-switch_hour(data2$hour)
@@ -424,7 +411,7 @@ server <- function(input, output) {
     
   })
   
-  ########### Delays Dashboard Tab
+########### Delays Dashboard Tab
   # Table: Delays for Each Hour
   output$tab4<- DT::renderDataTable(
     DT::datatable({
@@ -440,10 +427,11 @@ server <- function(input, output) {
       data4[is.na(data4)] <- 0
       data4$hour<-switch_hour(data4$hour)
       data4 <- as.data.frame(data4)
-     # data4$total <- data4$number_dep_delay + data4$number_arr_delay
-      #data4$percent <- percent(data4$total/sum(data4$total))
-      data4
+      data4$total <- data4$arrival_delays +data4$departure_delays
       
+      data4$percent <- percent(data4$total/sum(data4$total))
+      
+      data4
     },
     options = list(pageLength = 24))
   )
@@ -475,7 +463,7 @@ server <- function(input, output) {
                 position = position_dodge(0.9), size=3.5)
   })
   
-  ######### Top Airports Dashboard Tab
+######### Top Airports Dashboard Tab
   # Table: the number of flights for the most common 15 destination and airports airports for selected airport
   output$tab5<- DT::renderDataTable(
     DT::datatable({
@@ -494,7 +482,7 @@ server <- function(input, output) {
       
     })
   )
-  
+
   # Bar Chart: 15 most common destination and arrival aiports for selected airports
   output$BarTop10 <- renderPlot({
     justOneMonthReactive <- topAirportsMonth()
