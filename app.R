@@ -164,8 +164,8 @@ ui <- dashboardPage(
               
       ), #end of tab item
       
-
-            tabItem("about",
+      
+      tabItem("about",
               
               h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddarth Basu"),
               
