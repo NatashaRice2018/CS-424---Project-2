@@ -79,15 +79,13 @@ ui <-
   dashboardSidebar(
     
     sidebarMenu(
-      
-      menuItem("Dashboard", tabName="dashboard"),
-      
       menuItem("About", tabName="about"),
       menuItem("Arrivals & Departures", tabName="arrivals_departures"),
       menuItem("Arrivals & Departures: Airlines", tabName="arrivals_departures_airlines"),
       menuItem("Delays", tabName="delays"),
       # menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
-      menuItem("Top Airports", tabName="top_airports")
+      menuItem("Top Airports", tabName="top_airports"),
+      menuItem("Settings", tabName="dashboard")
       # menuItem("Top Airlines", tabName="top_airlines"),
       # menuItem("10 Interesting Days", tabName="interesting_days")
       
@@ -107,13 +105,8 @@ ui <-
               
               fluidRow(
                 box(
-                  selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour')
+                  selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour'), width=4
                 ),
-                box(
-                  selectInput("Month", "Select the month to visualize", choices=months, selected = 8)
-                ),
-                box(
-                  selectInput("Airport","Select airport:",choices=loc,selected='MDW')),
                 
                 textOutput("result")
               )
@@ -128,35 +121,29 @@ ui <-
       tabItem("arrivals_departures",
               fluidRow(
                 box(
-                  selectInput("arrivals_departures_time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour')
+                  selectInput("arrivals_departures_month", "Select the month to visualize", choices=months, selected = 8), width=3
                 ),
                 box(
-                  selectInput("arrivals_departures_month", "Select the month to visualize", choices=months, selected = 8)
+                  selectInput("arrivals_departures_airport","Select airport:",choices=loc,selected='MDW'), width=9
                 ),
-                box(
-                  selectInput("arrivals_departures_airport","Select airport:",choices=loc,selected='MDW')),
                 
                 textOutput("arrivals_departures_result")
               ),
               fluidRow(
-                box(title = "the total number of departures and total number of arrivals for each hour", solidHeader = TRUE, status = "primary", width = 12,
+                box(title = "Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 3,
                     
                     dataTableOutput("tab2")
                     
                 ),
-                box(title = "the total number of departures and total number of arrivals for each weekday", solidHeader = TRUE, status = "primary", width = 12,
-                    
-                    dataTableOutput("tab3")
-                    
+                box( title = "Total number of departures/arrivals by time", solidHeader = TRUE, status = "primary", width = 9,
+                     plotOutput("BarByTime")
                 )
               ),
               fluidRow(
-                box( title = "Total number of departures/arrivals by time", solidHeader = TRUE, status = "primary", width = 12,
-                     plotOutput("BarByTime")
-                )
-              ), 
-              fluidRow(
-                box( title = "Total number of departures/arrivals by Day of Week", solidHeader = TRUE, status = "primary", width = 12,
+                box(title = "Arrivals and Departures by Weekday", solidHeader = TRUE, status = "primary", width = 3,
+                    dataTableOutput("tab3")
+                ),
+                box( title = "Total number of departures/arrivals by Day of Week", solidHeader = TRUE, status = "primary", width = 9,
                      plotOutput("BarByWeekday")
                 )
               )
@@ -189,23 +176,36 @@ ui <-
                 )
       ),
       tabItem("delays",
-              fluidRow (
-                box(title = "Delays Per Hour", solidHeader = TRUE, status = "primary",width = 12,
-                    dataTableOutput("tab4"))
-              ),
               fluidRow(
-                box( title = "Delays Per Hour", solidHeader = TRUE, status = "primary", width = 12,
+                    box(
+                      selectInput("delays_month", "Select the month to visualize", choices=months, selected = 4), width=4
+                    ),
+                    box(
+                      selectInput("delays_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
+                    )
+              ),
+              fluidRow (
+                box(title = "Delays Per Hour", solidHeader = TRUE, status = "primary",width = 4,
+                    dataTableOutput("tab4")),
+                
+                box( title = "Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 8,
                      plotOutput("BarDelaybyHour")
                 )
               )
       ),
       tabItem("top_airports",
-              fluidRow( 
-                box(title = "15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 12,
-                    dataTableOutput("tab5"))
-              ),
               fluidRow(
-                box( title = "15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 12,
+                    box(
+                      selectInput("top_airports_month", "Select the month to visualize", choices=months, selected = 4), width=4
+                    ),
+                    box(
+                      selectInput("top_airports_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
+                    )
+              ),
+              fluidRow( 
+                box(title = "15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 4,
+                    dataTableOutput("tab5")),
+                box( title = "15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
                      plotOutput("BarTop10")
                 )
               )
@@ -227,18 +227,31 @@ server <- function(input, output) {
   
   colorsAD <- c('#334464','#9DADBF')
   
-  justOneMonthReactive <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$Month)})
+  # justOneMonthReactive <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$Month)})
   arrivalsDeparturesAirlinesMonth <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$arrivals_departures_airlines_month)})
   arrivalsDeparturesMonth <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$arrivals_departures_month)})
+  delaysMonth <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$delays_month)})
+  topAirportsMonth <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$top_airports_month)})
   
   output$result <- renderText({
     paste("You chose month:", input$Month, "and airport:", input$Airport)
   })
   
-  switch_hour<- function(x, chosenTime){
+  switch_hour<- function(x){
     c <- x
     #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
-    if (chosenTime!="24 hour"){
+    if (input$Time !="24 hour"){
+      c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
+    } else {
+      c<-paste(c,":00",sep="")
+    }
+    c
+  }
+  
+  switch_hour_chosen<- function(x, chosenTime){
+    c <- x
+    #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
+    if (chosenTime !="24 hour"){
       c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
     } else {
       c<-paste(c,":00",sep="")
@@ -302,7 +315,7 @@ server <- function(input, output) {
       data2 <- merge(dep_hour,arr_hour,all=TRUE)
       data2 <- subset(data2,!is.na(data2$hour))
       data2[is.na(data2)] <- 0
-      data2$hour<-switch_hour(data2$hour, input$arrivals_departures_time)
+      data2$hour<-switch_hour(data2$hour)
       data2 <- as.data.frame(data2)
       
       data2
@@ -325,7 +338,7 @@ server <- function(input, output) {
     data2 <- subset(data2,!is.na(data2$hour))
     c <- data2$hour
     #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
-    if (input$arrivals_departures_time!="24 hour"){
+    if (input$Time!="24 hour"){
       c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
     } else {
       c<-paste(c,":00",sep="")
@@ -395,39 +408,40 @@ server <- function(input, output) {
   output$tab4<- DT::renderDataTable(
     DT::datatable({
       
-      justOneMonthReactive <- justOneMonthReactive()
+      justOneMonthReactive <- delaysMonth()
       
       #MDW_delay_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&&(ORIGIN_AIRPORT_ID==13232 | DEST_AIRPORT_ID == 13232) ) %>% summarise(number_arrival_delay=n())
-      delay_arr_hour <- group_by(justOneMonthReactive,hour) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST == input$Airport ) %>% summarise(number_arr_delay=n())
-      delay_dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ORIGIN ==input$Airport & DEP_DELAY <0 ) %>% summarise(number_dep_delay=n())
+      delay_arr_hour <- group_by(justOneMonthReactive,hour) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST == input$delays_airport) %>% summarise(arrival_delays=n())
+      delay_dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ORIGIN ==input$delays_airport & DEP_DELAY <0 ) %>% summarise(departure_delays=n())
       colnames(delay_dep_hour)<-c("hour","number_dep_delay")
       data4 <- merge(delay_arr_hour,delay_dep_hour,all=TRUE)
       data4 <- subset(data4,!is.na(data4$hour))
       data4[is.na(data4)] <- 0
-      data4$hour<-switch_hour(data4$hour, input$arrivals_departures_time)
+      data4$hour<-switch_hour(data4$hour)
       data4 <- as.data.frame(data4)
-      data4$number_delay <- data4$number_arr_delay +data4$number_dep_delay
+      data4$total <- data4$arrival_delays +data4$departure_delays
       
-      data4$percent_delay <- percent(data4$number_delay/sum(data4$number_delay))
+      data4$percent <- percent(data4$total/sum(data4$total))
       
       data4
-    })
+    },
+    options = list(pageLength = 24))
   )
   
   # Bar Chart: Delays for Each Hour
   output$BarDelaybyHour<- renderPlot({
-    justOneMonthReactive <- justOneMonthReactive()
+    justOneMonthReactive <- delaysMonth()
     
     #MDW_delay_day_hour <- group_by(tem3,day,hour)  %>% select(DEST_AIRPORT_ID,ORIGIN_AIRPORT_ID,ARR_DELAY,DEP_DELAY) %>% filter((ARR_DELAY>0 | DEP_DELAY >0)&&(ORIGIN_AIRPORT_ID==13232 | DEST_AIRPORT_ID == 13232) ) %>% summarise(number_arrival_delay=n())
-    delay_arr_hour <- group_by(justOneMonthReactive,hour) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST == input$Airport ) %>% summarise(count=n())
+    delay_arr_hour <- group_by(justOneMonthReactive,hour) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST == input$delays_airport ) %>% summarise(count=n())
     delay_arr_hour$type = "Departure"
-    delay_dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ORIGIN ==input$Airport & DEP_DELAY <0 ) %>% summarise(count=n())
+    delay_dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ORIGIN ==input$delays_airport & DEP_DELAY <0 ) %>% summarise(count=n())
     delay_dep_hour$type = "Arrival"
     colnames(delay_dep_hour)<-c("hour","count", "type")
     data4 <- merge(delay_arr_hour,delay_dep_hour,all=TRUE)
     data4 <- subset(data4,!is.na(data4$hour))
     data4[is.na(data4)] <- 0
-    data4$hour<-switch_hour(data4$hour, input$arrivals_departures_time)
+    data4$hour<-switch_hour(data4$hour)
     data4 <- as.data.frame(data4)
     
     
@@ -445,14 +459,14 @@ server <- function(input, output) {
   output$tab5<- DT::renderDataTable(
     DT::datatable({
       
-      justOneMonthReactive <- justOneMonthReactive()
+      justOneMonthReactive <- topAirportsMonth()
       
-      most_common_15_destinations <- group_by(justOneMonthReactive,DEST)  %>% select(ORIGIN) %>% filter(ORIGIN == input$Airport) %>% summarise(number_of_dest_flights=n()) %>% arrange(desc(number_of_dest_flights)) %>% top_n(15)
+      most_common_15_destinations <- group_by(justOneMonthReactive,DEST)  %>% select(ORIGIN) %>% filter(ORIGIN == input$top_airports_airport) %>% summarise(departures=n()) %>% arrange(desc(departures)) %>% top_n(15)
       
       # table showing the number of flights for the most common 15 arrival airports (depart: other airport, arrive: MDW) 
-      most_common_15_arrivals <- group_by(justOneMonthReactive,ORIGIN)  %>% select(DEST) %>% filter(DEST == input$Airport ) %>% summarise(number_of_arr_flights=n()) %>% arrange(desc(number_of_arr_flights)) %>% top_n(15)
-      most_common_15_arrivals$Rank <- dense_rank(desc(most_common_15_arrivals$number_of_arr_flights)) 
-      most_common_15_destinations$Rank <- dense_rank(desc(most_common_15_destinations$number_of_dest_flights))
+      most_common_15_arrivals <- group_by(justOneMonthReactive,ORIGIN)  %>% select(DEST) %>% filter(DEST == input$top_airports_airport) %>% summarise(arrivals=n()) %>% arrange(desc(arrivals)) %>% top_n(15)
+      most_common_15_arrivals$Rank <- dense_rank(desc(most_common_15_arrivals$arrivals)) 
+      most_common_15_destinations$Rank <- dense_rank(desc(most_common_15_destinations$departures))
       
       data5 <- as.data.frame(merge(most_common_15_arrivals,most_common_15_destinations,all=TRUE))
       data5
@@ -462,12 +476,12 @@ server <- function(input, output) {
 
   # Bar Chart: 15 most common destination and arrival aiports for selected airports
   output$BarTop10 <- renderPlot({
-    justOneMonthReactive <- justOneMonthReactive()
+    justOneMonthReactive <- topAirportsMonth()
     
-    most_common_15_destinations <- group_by(justOneMonthReactive,DEST)  %>% select(ORIGIN) %>% filter(ORIGIN == input$Airport) %>% summarise(count=n()) %>% arrange(desc(count)) %>% top_n(15)
+    most_common_15_destinations <- group_by(justOneMonthReactive,DEST)  %>% select(ORIGIN) %>% filter(ORIGIN == input$top_airports_airport) %>% summarise(count=n()) %>% arrange(desc(count)) %>% top_n(15)
     
     # table showing the number of flights for the most common 15 arrival airports (depart: other airport, arrive: MDW) 
-    most_common_15_arrivals <- group_by(justOneMonthReactive,ORIGIN)  %>% select(DEST) %>% filter(DEST == input$Airport ) %>% summarise(count=n()) %>% arrange(desc(count)) %>% top_n(15)
+    most_common_15_arrivals <- group_by(justOneMonthReactive,ORIGIN)  %>% select(DEST) %>% filter(DEST == input$top_airports_airport ) %>% summarise(count=n()) %>% arrange(desc(count)) %>% top_n(15)
     most_common_15_arrivals$Rank <- dense_rank(desc(most_common_15_arrivals$count)) 
     most_common_15_destinations$Rank <- dense_rank(desc(most_common_15_destinations$count))
     
