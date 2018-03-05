@@ -74,7 +74,7 @@ ui <-
   
   dashboardPage( 
   
-  dashboardHeader(title = "CS 424: Project 2"),
+  dashboardHeader(title = "Learning to Fly"),
   
   dashboardSidebar(
     
@@ -106,9 +106,8 @@ ui <-
               fluidRow(
                 box(
                   selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour'), width=4
-                ),
+                )
                 
-                textOutput("result")
               )
               
       ), #end of tab item
@@ -322,13 +321,17 @@ server <- function(input, output) {
     DT::datatable({
       justOneMonthReactive <- arrivalsDeparturesMonth()
       
-      dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport ) %>% summarise(number_dep=n())
-      arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST==input$arrivals_depatures_airport) %>% summarise(number_arrival=n())
+      dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport ) %>% summarise(count=n())
+      #dep_hour$type = "Departure"
+      arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(count=n())
+      #arr_hour$type = "Arrival"
       colnames(dep_hour)<-c("hour","number_dep")
+      colnames(arr_hour)<-c("hour","number_arr")
       data2 <- merge(dep_hour,arr_hour,all=TRUE)
       data2 <- subset(data2,!is.na(data2$hour))
-      data2[is.na(data2)] <- 0
       data2$hour<-switch_hour(data2$hour)
+      #set a factor for time baised on what clock we are in
+      #data2$hour <- set_time_factor(data2$hour)
       data2 <- as.data.frame(data2)
       
       data2
@@ -340,13 +343,17 @@ server <- function(input, output) {
   )
   
   # Bar Graph: Arrivals and Departures by Hour of the Day 
+  
   output$BarByTime <- renderPlot({
     justOneMonthReactive <- arrivalsDeparturesMonth()
     
-    dep_hour <- group_by(justOneMonthReactive,hour)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport ) %>% summarise(count=n())
+    dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport ) %>% summarise(count=n())
+    colnames(dep_hour)[1]<-"hour"
     dep_hour$type = "Departure"
+    
     arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(count=n())
     arr_hour$type = "Arrival"
+    
     data2 <- merge(dep_hour,arr_hour,all=TRUE)
     data2 <- subset(data2,!is.na(data2$hour))
     data2$hour<-switch_hour(data2$hour)
@@ -362,6 +369,7 @@ server <- function(input, output) {
                 position = position_dodge(0.9), size=3.5)
     
   })
+  
   
   # Table: The total number of departures and total number of arrivals for each day of the week across that month
   output$tab3 <-DT::renderDataTable(
@@ -427,9 +435,9 @@ server <- function(input, output) {
       data4[is.na(data4)] <- 0
       data4$hour<-switch_hour(data4$hour)
       data4 <- as.data.frame(data4)
-      data4$total <- data4$arrival_delays +data4$departure_delays
       
-      data4$percent <- percent(data4$total/sum(data4$total))
+      #data4$total <- data4$arrival_delays +data4$departure_delays
+      #data4$percent <- percent(data4$total/sum(data4$total))
       
       data4
     },
