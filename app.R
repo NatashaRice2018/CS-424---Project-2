@@ -70,7 +70,9 @@ months <- c(1:12)
 t<-c("24 hour","12 hour am/pm")
 loc <- c('MDW','ORD')
 # Define UI for application that draws a histogram
-ui <- dashboardPage(
+ui <- 
+  
+  dashboardPage( 
   
   dashboardHeader(title = "CS 424: Project 2"),
   
@@ -80,13 +82,24 @@ ui <- dashboardPage(
       
       menuItem("Dashboard", tabName="dashboard"),
       
-      menuItem("About", tabName="about")
+      menuItem("About", tabName="about"),
+      menuItem("Arrivals & Departures", tabName="arrivals_departures"),
+      menuItem("Arrivals & Departures: Airlines", tabName="arrivals_departures_airlines"),
+      menuItem("Delays", tabName="delays"),
+      menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
+      menuItem("Top Airports", tabName="top_airports"),
+      menuItem("Top Airlines", tabName="top_airlines"),
+      menuItem("10 Interesting Days", tabName="interesting_days")
       
     )
     
   ),
   
   dashboardBody(
+    
+    tags$head(
+      tags$link(rel="stylesheet", type="text/css", href="custom.css")
+    ),
     
     tabItems(
       
@@ -102,11 +115,6 @@ ui <- dashboardPage(
                 box(
                   selectInput("Airport","Select airport:",choices=loc,selected='MDW')),
                 
-                box(title = "total number of departures and arrivals for airlines", solidHeader = TRUE, status = "primary", width = 12,
-                    
-                    dataTableOutput("tab1")
-                    
-                ),
                 textOutput("result")
                 
               ), 
@@ -164,19 +172,33 @@ ui <- dashboardPage(
               
       ), #end of tab item
       
-      
+
       tabItem("about",
-              
-              h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddarth Basu"),
-              
-              a("Link to project website", href="https://guillermokrh.github.io/CS-424---Project-2-Website/")
-              
+        
+        h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddarth Basu"),
+        
+        a("Link to project website", href="https://guillermokrh.github.io/CS-424---Project-2-Website/")
+        
+      ),
+      
+      tabItem("arrivals_departures",
+                fluidRow(
+                  
+                  box(title = "total number of departures and arrivals for airlines", solidHeader = TRUE, status = "primary", width = 12,
+                      
+                      dataTableOutput("tab1")
+                      
+                  )
+                  
+                )
+                
+        
       )
       
     ) # end of TabItems 
     
-  ) # end of DashboardBody
-  
+  ), # end of DashboardBody
+  skin = c("black")
 ) # end of DashboardPage
 
 
