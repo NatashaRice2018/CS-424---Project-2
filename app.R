@@ -436,6 +436,8 @@ server <- function(input, output) {
       data4$hour<-switch_hour(data4$hour)
       data4 <- as.data.frame(data4)
       
+      data4$total <- data4$number_dep_delay + data4$arrival_delays
+      data4$percent <- percent(data4$total/sum(data4$total))
       #data4$total <- data4$arrival_delays +data4$departure_delays
       #data4$percent <- percent(data4$total/sum(data4$total))
       
