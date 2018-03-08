@@ -125,7 +125,7 @@ ui <-
         ), #end of tab item
         
         tabItem("about",
-                h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddarth Basu"),
+                h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddharth Basu"),
                 a("Link to project website", href="https://guillermokrh.github.io/CS-424---Project-2-Website/")
         ),
         
