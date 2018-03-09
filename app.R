@@ -309,9 +309,9 @@ server <- function(input, output) {
     
     justOneMonthReactive <- arrivalsDeparturesAirlinesMonth()
     n_arrival <- group_by(justOneMonthReactive,CARRIER)  %>% select(DEST,CARRIER ) %>% filter(DEST==input$arrivals_departures_airlines_airport) %>% summarise(Count=n())
-    n_arrival$type = "Departure"
+    n_arrival$type = "Arrival"
     n_dep <- group_by(justOneMonthReactive,CARRIER)  %>% select(ORIGIN,CARRIER) %>% filter(ORIGIN==input$arrivals_departures_airlines_airport) %>% summarise(Count=n())
-    n_dep$type = "Arrival"
+    n_dep$type = "Departure"
     data1 <- merge(n_arrival,n_dep,all=TRUE)
     data1[is.na(data1)] <- 0
     data1 <- as.data.frame(data1)
