@@ -157,7 +157,28 @@ ui <-
                   box( title = "Total number of departures/arrivals by Day of Week", solidHeader = TRUE, status = "primary", width = 9,
                        plotOutput("BarByWeekday")
                   )
+                ),
+                fluidRow(
+                  
+                  box( title = "Arrivals in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                       plotOutput("HeatArrHrORD")
+                  ),
+                  box( title = "Departures in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                       plotOutput("HeatDepHrORD")
+                  )
+                  
+                ),
+                fluidRow(
+                  
+                  box( title = "Arrivals in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                       plotOutput("HeatArrHrMdw")
+                  ),
+                  box( title = "Departures in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                       plotOutput("HeatDepHrMdw")
+                  )
+                  
                 )
+                
         ),
         
         tabItem("arrivals_departures_airlines",              
@@ -259,7 +280,16 @@ server <- function(input, output) {
   theme_set(theme_grey(base_size = 18)) 
   
   colorsAD <- c('#334464','#9DADBF')
-  colorsLH <- c("#99ccff", "#000066")
+  #Blue Gradient
+  #colorsLH <- c("#99ccff", "#000066")
+  #blue-green Gradiant
+  #colorsLH <- c("#00C9FF", "#92FE9D")
+  #blue-pink graident
+  #colorsLH <- c("#00dbde", "#fc00ff")
+  #Purple-Blue Graident
+  colorsLH <- c("#0FEBDB", "#3A057A")
+  
+  dayOfWeek <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
   
   # justOneMonthReactive <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$Month)})
   arrivalsDeparturesAirlinesMonth <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$arrivals_departures_airlines_month)})
@@ -276,6 +306,9 @@ server <- function(input, output) {
     #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
     if (input$Time !="24 hour"){
       c <- ifelse(c<12, paste(c,":00 AM",sep=""),paste(c-12,":00 PM",sep = ""))
+      #code currently has a 0:00am - we need to change that to 12 am.
+      c[c == "0:00 AM"] <- "12:00 AM"
+      c[c == "0:00 PM"] <- "12:00 PM"
     } else {
       c<-paste(c,":00",sep="")
     }
@@ -419,7 +452,7 @@ server <- function(input, output) {
       data3[is.na(data3)] <- 0
       data3 <- as.data.frame(data3)
       #reodder days of week
-      data3$weekday <- factor(data3$weekday, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+      data3$weekday <- factor(data3$weekday, levels = dayOfWeek )
       data3
       
     },
@@ -442,7 +475,7 @@ server <- function(input, output) {
     data3 <- subset(data3,!is.na(data3$weekday))
     data3[is.na(data3)] <- 0
     data3 <- as.data.frame(data3)
-    data3$weekday <- factor(data3$weekday, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+    data3$weekday <- factor(data3$weekday, levels = dayOfWeek)
     
     
     ggplot(data3, aes(x=weekday,y = Count , fill=type)) + 
@@ -567,10 +600,12 @@ server <- function(input, output) {
       colnames(OhrArr2)<-c("AIRLINE_ID","Month", "Count")
       OhrArr2$scale <- scale(OhrArr2$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
       OhrArr2$Month <- month.abb[OhrArr2$Month]
+      OhrArr2$Month <- factor(OhrArr2$Month, levels = month.abb)
       
       ggplot(OhrArr2, aes(x=AIRLINE_ID, y=Month )) +
         geom_tile(aes(fill = Count), colour = "white") + 
-        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
+        theme(panel.background = element_rect(fill = 'white')) 
         #scale_y_continuous(breaks=c(3,6,9,12))
     }
   )
@@ -578,14 +613,16 @@ server <- function(input, output) {
   output$HeatDepMonORD <- renderPlot(
     {
       OhrDep <- subset(allData2, ORIGIN== "ORD")
-      OhrDep2 <- group_by(OhrArr,AIRLINE_ID, month(OhrArr$ARR_TIME_new) ) %>% select(DEST,AIRLINE_ID, ARR_TIME_new )  %>% summarise(count=n())
+      OhrDep2 <- group_by(OhrDep,AIRLINE_ID, month(OhrDep$ARR_TIME_new) ) %>% select(ORIGIN,AIRLINE_ID, ARR_TIME_new )  %>% summarise(count=n())
       colnames(OhrDep2)<-c("AIRLINE_ID","Month", "Count")
-      OhrDep2$scale <- scale(OhrDep2$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
+      OhrDep2$scale <- scale(OhrDep2$Count, center = FALSE, scale = max(OhrDep2$Count, na.rm = TRUE))
       OhrDep2$Month <- month.abb[OhrDep2$Month]
+      OhrDep2$Month <- factor(OhrDep2$Month, levels = month.abb)
       
       ggplot(OhrDep2, aes(x=AIRLINE_ID, y=Month )) +
         geom_tile(aes(fill = Count), colour = "white") + 
-        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+        theme(panel.background = element_rect(fill = 'white'))
       #scale_y_continuous(breaks=c(3,6,9,12))s
     }
   )
@@ -597,10 +634,12 @@ server <- function(input, output) {
       colnames(MdwArr2)<-c("AIRLINE_ID","Month", "Count")
       MdwArr2$scale <- scale(MdwArr2$Count, center = FALSE, scale = max(MdwArr2$Count, na.rm = TRUE))
       MdwArr2$Month <- month.abb[MdwArr2$Month]
+      MdwArr2$Month <- factor(MdwArr2$Month, levels = month.abb)
       
       ggplot(MdwArr2, aes(x=AIRLINE_ID, y=Month )) +
         geom_tile(aes(fill = Count), colour = "white") + 
-        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+        theme(panel.background = element_rect(fill = 'white'))
       #scale_y_continuous(breaks=c(3,6,9,12))s
     }
   )
@@ -608,10 +647,12 @@ server <- function(input, output) {
   output$HeatDepMonMDW <- renderPlot(
     {
       MdwDep <- subset(allData2, ORIGIN== "MDW")
-      MdwDep2 <- group_by(MdwDep,AIRLINE_ID, month(MdwDep$ARR_TIME_new) ) %>% select(DEST,AIRLINE_ID, ARR_TIME_new )  %>% summarise(count=n())
+      MdwDep2 <- group_by(MdwDep,AIRLINE_ID, month(MdwDep$ARR_TIME_new) ) %>% select(ORIGIN,AIRLINE_ID, ARR_TIME_new )  %>% summarise(count=n())
       colnames(MdwDep2)<-c("AIRLINE_ID","Month", "Count")
       MdwDep2$scale <- scale(MdwDep2$Count, center = FALSE, scale = max(MdwDep2$Count, na.rm = TRUE))
       MdwDep2$Month <- month.abb[MdwDep2$Month]
+      MdwDep2$Month <- factor(MdwDep2$Month, levels = month.abb)
+      
       
       ggplot(MdwDep2, aes(x=AIRLINE_ID, y=Month )) +
         geom_tile(aes(fill = Count), colour = "white") + 
@@ -621,7 +662,69 @@ server <- function(input, output) {
     }
   )
   
+  output$HeatArrHrORD <- renderPlot(
+    {
+      OhrArr <- subset(allData2, DEST== "ORD")
+      OhrArr2 <- group_by(OhrArr,AIRLINE_ID, hour ) %>% select(DEST,AIRLINE_ID, ARR_TIME_new )  %>% summarise(count=n())
+      OhrArr2$scale <- scale(OhrArr2$count, center = FALSE, scale = max(OhrArr2$count, na.rm = TRUE))
+      OhrArr2$hour<- switch_hour(OhrArr2$hour)
+      OhrArr2$hour <- set_time_factor(OhrArr2$hour)
+      
+      ggplot(OhrArr2, aes(x=AIRLINE_ID, y=hour )) +
+        geom_tile(aes(fill = count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+        theme(panel.background = element_rect(fill = 'white'))
+      #scale_y_continuous(breaks=c(3,6,9,12))
+    }
+  )
   
+  output$HeatDepHrORD <- renderPlot(
+    {
+      OrdDep <- subset(allData2, ORIGIN== "ORD")
+      OrdDep2 <- group_by(OrdDep,AIRLINE_ID, hour ) %>% select(AIRLINE_ID )  %>% summarise(count=n())
+      OrdDep2$scale <- scale(OrdDep2$count, center = FALSE, scale = max(OrdDep2$count, na.rm = TRUE))
+      OrdDep2$hour<-switch_hour(OrdDep2$hour)
+      OrdDep2$hour <- set_time_factor(OrdDep2$hour)
+      
+      ggplot(OrdDep2, aes(x=AIRLINE_ID, y=hour )) +
+        geom_tile(aes(fill = count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+        theme(panel.background = element_rect(fill = 'white'))
+      #scale_y_continuous(breaks=c(3,6,9,12))
+    }
+  )
+  
+  output$HeatArrHrMdw <- renderPlot(
+    {
+      MdwArr <- subset(allData2, DEST== "MDW")
+      MdwArr2 <- group_by(MdwArr,AIRLINE_ID, hour ) %>% select(DEST,AIRLINE_ID, ARR_TIME_new )  %>% summarise(count=n())
+      MdwArr2$scale <- scale(MdwArr2$count, center = FALSE, scale = max(MdwArr2$count, na.rm = TRUE))
+      MdwArr2$hour<- switch_hour(MdwArr2$hour)
+      MdwArr2$hour <- set_time_factor(MdwArr2$hour)
+      
+      ggplot(MdwArr2, aes(x=AIRLINE_ID, y=hour )) +
+        geom_tile(aes(fill = count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+        theme(panel.background = element_rect(fill = 'white'))
+      #scale_y_continuous(breaks=c(3,6,9,12))
+    }
+  )
+  
+  output$HeatDepHrMdw <- renderPlot(
+    {
+      MdwDep <- subset(allData2, ORIGIN== "MDW")
+      MdwDep2 <- group_by(MdwDep,AIRLINE_ID, hour ) %>% select(AIRLINE_ID )  %>% summarise(count=n())
+      MdwDep2$scale <- scale(MdwDep2$count, center = FALSE, scale = max(MdwDep2$count, na.rm = TRUE))
+      MdwDep2$hour<-switch_hour(MdwDep2$hour)
+      MdwDep2$hour <- set_time_factor(MdwDep2$hour)
+      
+      ggplot(MdwDep2, aes(x=AIRLINE_ID, y=hour )) +
+        geom_tile(aes(fill = count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+        theme(panel.background = element_rect(fill = 'white'))
+      #scale_y_continuous(breaks=c(3,6,9,12))
+    }
+  )
   
 }
 
