@@ -19,6 +19,7 @@ library(dplyr)
 #Libaries needed to read in data faster.
 library(data.table)
 library(fasttime)
+library(RColorBrewer)
 # assume all of the tsv files in this directory are data of the same kind that I want to visualize
 
 ColNames<- c("FL_DATE","AIRLINE_ID","CARRIER","ORIGIN_AIRPORT_ID","ORIGIN","ORIGIN_CITY_NAME","ORIGIN_STATE_NM","DEST_AIRPORT_ID","DEST_CITY_NAME","DEST_STATE_NM","DEP_TIME","DEP_DELAY","DEP_DELAY_NEW","ARR_TIME","ARR_DELAY","ARR_DELAY_NEW","CANCELLED","CANCELLATION_CODE","DIVERTED","ACTUAL_ELAPSED_TIME","FLIGHTS","DISTANCE","CARRIER_DELAY","WEATHER_DELAY","NAS_DELAY","SECURITY_DELAY","LATE_AIRCRAFT_DELAY","NULL")
@@ -262,7 +263,16 @@ ui <-
                   box( title = "15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
                        plotOutput("BarTop10")
                   )
+                ),
+                fluidRow(
+                  box(title = "top 15 airports by month O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("Top15DestAirportsOrd")),
+                  box(title = "top 15 airports by month Midway", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("Top15DestAirportsMdw"))
+                
                 )
+                
+                
         )
         
         
@@ -332,8 +342,12 @@ server <- function(input, output) {
   set_time_factor<-function(x)
   {
     time <- x
-    
-    temp <- unique(time)
+    if (input$Time =="24 hour"){
+      temp <- c("0:00","1:00", "2:00", "3:00", "4:00", "5:00", "6:00", "7:00", "8:00", "9:00", "10:00", "11:00", "12:00","13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00");
+    }
+    else{
+      temp <- c("12:00 AM", "1:00 AM", "2:00 AM", "3:00 AM", "4:00 AM", "5:00 AM", "6:00 AM", "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM", "10:00 PM", "11:00 PM");
+    }
     time <- factor(time, levels = temp)
     
     time
@@ -578,8 +592,6 @@ server <- function(input, output) {
     colnames(most_common_15_destinations)[colnames(most_common_15_destinations)=="DEST"] <- "LOC"
     colnames(most_common_15_arrivals)[colnames(most_common_15_arrivals)=="ORIGIN"] <- "LOC"
     
-    #cheap fix- there is a 16th airport in the dataset so we'll remove it.
-    most_common_15_destinations <- most_common_15_destinations[-c(16), ]
     data5 <- as.data.frame(merge(most_common_15_arrivals,most_common_15_destinations,all=TRUE))
     
     data5$LOC <- reorder(data5$LOC, -data5$count)
@@ -723,6 +735,79 @@ server <- function(input, output) {
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
         theme(panel.background = element_rect(fill = 'white'))
       #scale_y_continuous(breaks=c(3,6,9,12))
+    }
+  )
+  
+  output$Top15DestAirportsOrd <- renderPlot(
+    {
+      OrdDep <- subset(allData2, ORIGIN== "ORD")
+      
+      most_common_15_destinations <- group_by(OrdDep,DEST,month(OrdDep$ARR_TIME_new) )  %>% select(ORIGIN) %>% filter(ORIGIN == "ORD") %>% summarise(departures=n()) %>% arrange(desc(departures))
+      colnames(most_common_15_destinations)<-c("DEST","Month", "Count")
+      most_common_15_destinations <-most_common_15_destinations %>%  group_by(Month) %>%  top_n(n=15, wt = Count)
+      most_common_15_destinations$DEST <- rep(most_common_15_destinations$DEST)
+      most_common_15_destinations$Month <- month.abb[most_common_15_destinations$Month]
+      
+      ggplot(most_common_15_destinations, aes(x=DEST, y=Month )) +
+        geom_tile(aes(fill = Count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+        theme(panel.background = element_rect(fill = 'white'))
+      
+    }
+  )
+  
+  
+  output$Top15DestAirportsMdw <- renderPlot(
+    {
+      MdwDep <- subset(allData2, ORIGIN== "MDW")
+      
+      most_common_15_destinations <- group_by(MdwDep,DEST,month(MdwDep$ARR_TIME_new) )  %>% select(ORIGIN) %>% filter(ORIGIN == "MDW") %>% summarise(departures=n()) %>% arrange(desc(departures))
+      colnames(most_common_15_destinations)<-c("DEST","Month", "Count")
+      most_common_15_destinations <-most_common_15_destinations %>%  group_by(Month) %>%  top_n(n=15, wt = Count)
+      most_common_15_destinations$DEST <- rep(most_common_15_destinations$DEST)
+      most_common_15_destinations$Month <- month.abb[most_common_15_destinations$Month]
+      
+      ggplot(most_common_15_destinations, aes(x=DEST, y=Month )) +
+        geom_tile(aes(fill = Count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+        theme(panel.background = element_rect(fill = 'white'))
+      
+    }
+  )
+  
+  Top15DestAirportsOrdChart<- renderPlot(
+    {
+      OrdDep <- subset(allData2, ORIGIN== "ORD")
+      
+      most_common_15_destinations <- group_by(OrdDep,DEST,month(OrdDep$ARR_TIME_new) )  %>% select(ORIGIN) %>% filter(ORIGIN == "ORD") %>% summarise(departures=n()) %>% arrange(desc(departures))
+      colnames(most_common_15_destinations)<-c("DEST","Month", "Count")
+      most_common_15_destinations <-most_common_15_destinations %>%  group_by(Month) %>%  top_n(n=15, wt = Count)
+      most_common_15_destinations$DEST <- rep(most_common_15_destinations$DEST)
+      most_common_15_destinations$Month <- month.abb[most_common_15_destinations$Month]
+      
+      ggplot(most_common_15_destinations, aes(reorder(DEST, Count), Count, color=DEST), fill=getPalette(colourCount)) +
+        geom_point(stat = "identity") +
+        facet_wrap(~ Month)
+      
+      
+    }
+  )
+  
+  Top15DestAirportsMdwChart<- renderPlot(
+    {
+      OrdDep <- subset(allData2, ORIGIN== "MDW")
+      
+      most_common_15_destinations <- group_by(OrdDep,DEST,month(OrdDep$ARR_TIME_new) )  %>% select(ORIGIN) %>% filter(ORIGIN == "MDW") %>% summarise(departures=n()) %>% arrange(desc(departures))
+      colnames(most_common_15_destinations)<-c("DEST","Month", "Count")
+      most_common_15_destinations <-most_common_15_destinations %>%  group_by(Month) %>%  top_n(n=15, wt = Count)
+      most_common_15_destinations$DEST <- rep(most_common_15_destinations$DEST)
+      most_common_15_destinations$Month <- month.abb[most_common_15_destinations$Month]
+      
+      ggplot(most_common_15_destinations, aes(reorder(DEST, Count), Count, color=DEST), fill=getPalette(colourCount)) +
+        geom_point(stat = "identity") +
+        facet_wrap(~ Month)
+      
+      
     }
   )
   
