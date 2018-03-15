@@ -20,6 +20,7 @@ library(dplyr)
 library(data.table)
 library(fasttime)
 library(ggridges)
+
 # assume all of the tsv files in this directory are data of the same kind that I want to visualize
 
 ColNames<- c("FL_DATE","AIRLINE_ID","CARRIER","ORIGIN_AIRPORT_ID","ORIGIN","ORIGIN_CITY_NAME","ORIGIN_STATE_NM","DEST_AIRPORT_ID","DEST_CITY_NAME","DEST_STATE_NM","DEP_TIME","DEP_DELAY","DEP_DELAY_NEW","ARR_TIME","ARR_DELAY","ARR_DELAY_NEW","CANCELLED","CANCELLATION_CODE","DIVERTED","ACTUAL_ELAPSED_TIME","FLIGHTS","DISTANCE","CARRIER_DELAY","WEATHER_DELAY","NAS_DELAY","SECURITY_DELAY","LATE_AIRCRAFT_DELAY","NULL")
@@ -27,7 +28,7 @@ ColNames<- c("FL_DATE","AIRLINE_ID","CARRIER","ORIGIN_AIRPORT_ID","ORIGIN","ORIG
 
 
 airport = list.files(pattern = "*.cleaned.csv")
-allData <- lapply(airport, fread, header = FALSE,sep='\t')
+allData <- lapply(airport, read.table , header = FALSE,sep='\t')
 allData2 <- do.call(rbind, allData)
 names(allData2)<-ColNames
 
@@ -55,8 +56,6 @@ allData2$hour_dep <- hour(allData2$DEP_TIME_new)
 #allData2$hour_dep <-paste(allData2$hour_dep,":00",sep = "")
 allData2$weekday_dep <- weekdays(allData2$DEP_TIME_new)
 
-
-
 percent <- function(x, digits = 2, format = "f", ...) {
   paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
 }
@@ -79,8 +78,8 @@ airport_code_name<- group_by(allData2,ORIGIN_AIRPORT_ID,ORIGIN) %>% summarise()
 colnames(airport_code_name)<-c("DEST_AIRPORT_ID","DEST")
 allData2 <- merge(allData2,airport_code_name)
 
-months <- c(1:12)
 t<-c("24 hour","12 hour am/pm")
+months <- c(1:12)
 loc <- c('MDW','ORD')
 # Define UI for application that draws a histogram
 ui <- 
@@ -274,7 +273,7 @@ ui <-
                       plotOutput("Top15DestAirportsOrd")),
                   box(title = "top 15 airports by month Midway", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("Top15DestAirportsMdw"))
-                
+                  
                 )
                 
                 
@@ -288,8 +287,10 @@ ui <-
   ) # end of DashboardPage
 
 
-# output is a list, as is input
+
 server <- function(input, output) {
+  
+  
   
   # increase the default font size
   theme_set(theme_grey(base_size = 18)) 
@@ -384,9 +385,9 @@ server <- function(input, output) {
     
     justOneMonthReactive <- arrivalsDeparturesAirlinesMonth()
     n_arrival <- group_by(justOneMonthReactive,CARRIER)  %>% select(DEST,CARRIER ) %>% filter(DEST==input$arrivals_departures_airlines_airport) %>% summarise(Count=n())
-    n_arrival$type = "Arrival"
+    n_arrival$type = "Departure"
     n_dep <- group_by(justOneMonthReactive,CARRIER)  %>% select(ORIGIN,CARRIER) %>% filter(ORIGIN==input$arrivals_departures_airlines_airport) %>% summarise(Count=n())
-    n_dep$type = "Departure"
+    n_dep$type = "Arrival"
     data1 <- merge(n_arrival,n_dep,all=TRUE)
     data1[is.na(data1)] <- 0
     data1 <- as.data.frame(data1)
@@ -506,6 +507,10 @@ server <- function(input, output) {
     
   })
   
+  
+  
+  
+  
   ########### Delays Dashboard Tab
   # Table: Delays for Each Hour
   output$tab4<- DT::renderDataTable(
@@ -623,7 +628,7 @@ server <- function(input, output) {
         geom_tile(aes(fill = Count), colour = "white") + 
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
         theme(panel.background = element_rect(fill = 'white')) 
-        #scale_y_continuous(breaks=c(3,6,9,12))
+      #scale_y_continuous(breaks=c(3,6,9,12))
     }
   )
   
@@ -643,6 +648,8 @@ server <- function(input, output) {
       #scale_y_continuous(breaks=c(3,6,9,12))s
     }
   )
+  
+  
   
   output$HeatArrMonMDW <- renderPlot(
     {
@@ -710,6 +717,8 @@ server <- function(input, output) {
       #scale_y_continuous(breaks=c(3,6,9,12))
     }
   )
+  
+  
   
   output$HeatArrHrMdw <- renderPlot(
     {
@@ -816,6 +825,9 @@ server <- function(input, output) {
     }
   )
   
+  
+  
+  
   output$NumAndTypeOfDelayChange <- renderPlot({
     
     #NAS_DELAY !=0 | LATE_AIRCRAFT_DELAY != 0
@@ -835,7 +847,7 @@ server <- function(input, output) {
     nd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(NAS_DELAY) %>% summarise(count=n())
     colnames(nd)<-c("month", "count")
     nd$type = "NAS Delay"
-
+    
     temp <- subset(allData2, SECURITY_DELAY != 0)
     sd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(SECURITY_DELAY) %>% summarise(count=n())
     colnames(sd)<-c("month", "count")
@@ -902,6 +914,9 @@ server <- function(input, output) {
       geom_area()
     
   })
+  
 }
+
+
 
 shinyApp(ui = ui, server = server)
