@@ -20,6 +20,9 @@ library(dplyr)
 library(data.table)
 library(fasttime)
 library(ggridges)
+#libaries for the map
+library(plotly)
+
 
 # assume all of the tsv files in this directory are data of the same kind that I want to visualize
 
@@ -97,7 +100,8 @@ ui <-
         menuItem("Delays", tabName="delays"),
         # menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
         menuItem("Top Airports", tabName="top_airports"),
-        menuItem("Settings", tabName="dashboard")
+        menuItem("Settings", tabName="dashboard"),
+        menuItem("Map: Arrivals", tabName="map_arrivals")
         # menuItem("Top Airlines", tabName="top_airlines"),
         # menuItem("10 Interesting Days", tabName="interesting_days")
         
@@ -275,10 +279,16 @@ ui <-
                       plotOutput("Top15DestAirportsMdw"))
                   
                 )
-                
-                
+          ),
+        tabItem("map_arrivals",
+                #MapDeparturePercent
+                box(title = "Percentage of Arrivals from Illinois", solidHeader = TRUE, status = "primary", width = 6,
+                plotlyOutput("MapDeparturePercent")
+                ),
+                box(title = "Percentage of Departures from Illinois", solidHeader = TRUE, status = "primary", width = 6,
+                    plotlyOutput("MapArrivalePercent")
+                )
         )
-        
         
       ) # end of TabItems 
       
@@ -791,8 +801,6 @@ server <- function(input, output) {
   
   output$Top15DestAirportsOrdChart<- renderPlot(
     {
-      OrdDep <- subset(allData2, ORIGIN== "ORD")
-      
       most_common_15_destinations <- group_by(OrdDep,DEST,month(OrdDep$ARR_TIME_new) )  %>% select(ORIGIN) %>% filter(ORIGIN == "ORD") %>% summarise(departures=n()) %>% arrange(desc(departures))
       colnames(most_common_15_destinations)<-c("DEST","Month", "Count")
       most_common_15_destinations <-most_common_15_destinations %>%  group_by(Month) %>%  top_n(n=15, wt = Count)
@@ -912,6 +920,81 @@ server <- function(input, output) {
     #stacked Area
     ggplot(delay_data, aes(x=month, y=count, fill=type)) + 
       geom_area()
+    
+  })
+  
+  output$MapDeparturePercent <- renderPlotly({
+    
+    
+    # We start in illinois
+    temp <- subset(allData2, ORIGIN == "ORD" | ORIGIN == "MDW" )
+    #figure out where people are going  DEST_STATE_NM
+    dest <- group_by(temp, DEST_STATE_NM ) %>% summarise(count=n())
+    colnames(dest) <- c("State", "CountDest")
+    x <- dest$State
+    dest$code<- state.abb[match(x,state.name)]
+    dest$percent <- percent(dest$CountDest/sum(dest$CountDest))
+    
+    dest$hover <- with(dest, paste(State, '<br>', "Total Visits", CountDest , "<br>",
+                               "Percentage of total Visitors", percent))
+    # give state boundaries a white border
+    l <- list(color = toRGB("white"), width = 2)
+    # specify some map projection/options
+    g <- list(
+      scope = 'usa',
+      projection = list(type = 'albers usa'),
+      showlakes = TRUE,
+      lakecolor = toRGB('white')
+    )
+    
+     plot_geo(dest, locationmode = 'USA-states') %>%
+      add_trace(
+        z = ~CountDest, text = ~hover, locations = ~code,
+        color = ~CountDest, colors = 'Purples'
+      ) %>%
+      colorbar(title = "Trips") %>%
+      layout(
+        title = 'Most Common US Destinations from Illinois<br>(Hover for breakdown and percent of travel)',
+        geo = g
+      )
+    
+  })
+  
+  
+  output$MapArrivalePercent <- renderPlotly({
+    
+    
+    # We start in illinois
+    temp <- subset(allData2, DEST == "ORD" | DEST == "MDW" )
+    #figure out where people are going  DEST_STATE_NM
+    arriv <- group_by(temp, ORIGIN_STATE_NM ) %>% summarise(count=n())
+    colnames(arriv) <- c("State", "CountDest")
+    x <- arriv$State
+    arriv$code<- state.abb[match(x,state.name)]
+    arriv$percent <- percent(arriv$CountDest/sum(arriv$CountDest))
+    
+    arriv$hover <- with(arriv, paste(State, '<br>', "Total Visits", CountDest , "<br>",
+                                   "Percentage of total Visitors", percent))
+    # give state boundaries a white border
+    l <- list(color = toRGB("white"), width = 2)
+    # specify some map projection/options
+    g <- list(
+      scope = 'usa',
+      projection = list(type = 'albers usa'),
+      showlakes = TRUE,
+      lakecolor = toRGB('white')
+    )
+    
+    plot_geo(arriv, locationmode = 'USA-states') %>%
+      add_trace(
+        z = ~CountDest, text = ~hover, locations = ~code,
+        color = ~CountDest, colors = 'Purples'
+      ) %>%
+      colorbar(title = "Trips") %>%
+      layout(
+        title = 'Most Common US Destinations from Illinois<br>(Hover for breakdown and percent of travel)',
+        geo = g
+      )
     
   })
   
