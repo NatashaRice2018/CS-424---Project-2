@@ -331,6 +331,14 @@ ui <-
                   box(title = "Departures/Arrivals for selected date by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("DateDepArrHrORD")
                   )
+                ),
+                fluidRow(
+                  box(title = "Delays for selected Date by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("DateDelayMDW")),
+                  
+                  box(title = "Delays for selected date by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("DateDelayORD")
+                  )
                 )
                 )
       ) # end of TabItems 
@@ -1409,6 +1417,143 @@ server <- function(input, output) {
     
   })
   
+  output$DateDelayMDW <- renderPlot({
+    data <- subset(allData2, DEST == "MDW" | ORIGIN == "MDW" )
+    data <- subset(data, input$date ==  date(ARR_TIME_new))
+    
+    final <- data.frame(matrix(ncol = 3, nrow = 0))
+    colnames(final)<-c("hour","count", "type")
+    #get all flights with delays
+    temp <- subset(data, CARRIER_DELAY != 0)
+    cd <- group_by(temp, temp$hour )  %>% select(CARRIER_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(cd) && nrow(cd)==0 ))
+    {
+      colnames(cd)<-c("hour", "count")
+      cd$type = "Carrier Delay"
+      final <- merge(final, cd, all= TRUE)
+    }
+    
+    temp <- subset(data, WEATHER_DELAY != 0)
+    wd <- group_by(temp, temp$hour )  %>% select(WEATHER_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(wd) && nrow(wd)==0 ))
+    {
+      colnames(wd)<-c("hour", "count")
+      wd$type = "Weather Delay"
+      final <- merge(final, wd, all= TRUE)
+    }
+    
+    temp <- subset(data, NAS_DELAY != 0)
+    nd <- group_by(temp, temp$hour )  %>% select(NAS_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(nd) && nrow(nd)==0 ))
+    {
+      colnames(nd)<-c("hour", "count")
+      nd$type = "NAS Delay"
+      final <- merge(final, nd, all= TRUE)
+    }
+    
+    temp <- subset(data, SECURITY_DELAY != 0)
+    sd <- group_by(temp, temp$hour )  %>% select(SECURITY_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(sd) && nrow(sd)==0 ))
+    {
+      colnames(sd)<-c("hour", "count")
+      sd$type = "Security Delay"
+      final <- merge(final, sd, all= TRUE)
+    }
+    
+    temp <- subset(data, LATE_AIRCRAFT_DELAY != 0)
+    lad <- group_by(temp, temp$hour )  %>% select(LATE_AIRCRAFT_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(lad) && nrow(lad)==0 ))
+    {
+      colnames(lad)<-c("hour", "count")
+      lad$type = "Late Aircraft Delay"
+      final <- merge(final, lad, all= TRUE)
+    }
+    
+    delay_data <- final
+    #join all delay types into one table
+    
+    delay_data$hour<-switch_hour(delay_data$hour)
+    #set a factor for time baised on what clock we are in
+    delay_data$hour <- set_time_factor(delay_data$hour)
+    
+    #stacked Area
+    #ggplot(delay_data, aes(x=month, y=count, fill=type)) + 
+    #  geom_area()
+    
+    ggplot(delay_data, aes(x=type, y=hour )) +
+      geom_tile(aes(fill = count), colour = "white") + 
+      scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+      theme(panel.background = element_rect(fill = 'white'))
+  })
+  
+  output$DateDelayORD <- renderPlot({
+    data <- subset(allData2, DEST == "ORD" | ORIGIN == "ORD" )
+    data <- subset(data, input$date ==  date(ARR_TIME_new))
+    
+    final <- data.frame(matrix(ncol = 3, nrow = 0))
+    colnames(final)<-c("hour","count", "type")
+    #get all flights with delays
+    temp <- subset(data, CARRIER_DELAY != 0)
+    cd <- group_by(temp, temp$hour )  %>% select(CARRIER_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(cd) && nrow(cd)==0 ))
+    {
+    colnames(cd)<-c("hour", "count")
+    cd$type = "Carrier Delay"
+    final <- merge(final, cd, all= TRUE)
+    }
+    
+    temp <- subset(data, WEATHER_DELAY != 0)
+    wd <- group_by(temp, temp$hour )  %>% select(WEATHER_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(wd) && nrow(wd)==0 ))
+    {
+    colnames(wd)<-c("hour", "count")
+    wd$type = "Weather Delay"
+    final <- merge(final, wd, all= TRUE)
+    }
+    
+    temp <- subset(data, NAS_DELAY != 0)
+    nd <- group_by(temp, temp$hour )  %>% select(NAS_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(nd) && nrow(nd)==0 ))
+    {
+      colnames(nd)<-c("hour", "count")
+      nd$type = "NAS Delay"
+      final <- merge(final, nd, all= TRUE)
+    }
+    
+    temp <- subset(data, SECURITY_DELAY != 0)
+    sd <- group_by(temp, temp$hour )  %>% select(SECURITY_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(sd) && nrow(sd)==0 ))
+    {
+      colnames(sd)<-c("hour", "count")
+      sd$type = "Security Delay"
+      final <- merge(final, sd, all= TRUE)
+    }
+    
+    temp <- subset(data, LATE_AIRCRAFT_DELAY != 0)
+    lad <- group_by(temp, temp$hour )  %>% select(LATE_AIRCRAFT_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(lad) && nrow(lad)==0 ))
+    {
+    colnames(lad)<-c("hour", "count")
+    lad$type = "Late Aircraft Delay"
+    final <- merge(final, lad, all= TRUE)
+    }
+    
+    delay_data <- final
+    #join all delay types into one table
+    
+    delay_data$hour<-switch_hour(delay_data$hour)
+    #set a factor for time baised on what clock we are in
+    delay_data$hour <- set_time_factor(delay_data$hour)
+    
+    #stacked Area
+    #ggplot(delay_data, aes(x=month, y=count, fill=type)) + 
+    #  geom_area()
+    
+    ggplot(delay_data, aes(x=type, y=hour )) +
+      geom_tile(aes(fill = count), colour = "white") + 
+      scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+      theme(panel.background = element_rect(fill = 'white'))
+  })
   
 }
 
