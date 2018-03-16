@@ -77,6 +77,8 @@ to24hour<-function(x){
   x 
 }
 
+
+
 airport_code_name<- group_by(allData2,ORIGIN_AIRPORT_ID,ORIGIN) %>% summarise()
 colnames(airport_code_name)<-c("DEST_AIRPORT_ID","DEST")
 allData2 <- merge(allData2,airport_code_name)
@@ -84,6 +86,7 @@ allData2 <- merge(allData2,airport_code_name)
 t<-c("24 hour","12 hour am/pm")
 months <- c(1:12)
 loc <- c('MDW','ORD')
+airlines <- unique(allData2$CARRIER)
 # Define UI for application that draws a histogram
 ui <- 
   
@@ -100,8 +103,9 @@ ui <-
         menuItem("Delays", tabName="delays"),
         # menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
         menuItem("Top Airports", tabName="top_airports"),
-        menuItem("Settings", tabName="dashboard"),
-        menuItem("Map: Arrivals", tabName="map_arrivals")
+        menuItem("Map", tabName="map"),
+        menuItem("Airline", tabName="airline"),
+        menuItem("Settings", tabName="dashboard")
         # menuItem("Top Airlines", tabName="top_airlines"),
         # menuItem("10 Interesting Days", tabName="interesting_days")
         
@@ -280,16 +284,38 @@ ui <-
                   
                 )
           ),
-        tabItem("map_arrivals",
-                #MapDeparturePercent
+        tabItem("map",
                 box(title = "Percentage of Arrivals from Illinois", solidHeader = TRUE, status = "primary", width = 6,
                 plotlyOutput("MapDeparturePercent")
                 ),
                 box(title = "Percentage of Departures from Illinois", solidHeader = TRUE, status = "primary", width = 6,
                     plotlyOutput("MapArrivalePercent")
                 )
+        ),
+        tabItem("airline",
+                fluidRow(
+                  box(
+                    selectInput("Airline", "Airline", choices=airlines), width=4
+                  )
+                ),
+                
+                fluidRow(
+                  box(title = "Arrivals for selected Airport by month at Midway", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("AirlineArrivalsMonthMDW")),
+                
+                box(title = "Arrivals for selected Airport by month at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                    plotOutput("AirlineArrivalsMonthORD")
+                    )
+              ),
+              fluidRow(
+                box(title = "Departures/Arrivals for selected Airport by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
+                    plotOutput("AirlineDepartureHRMDW")),
+                
+                box(title = "Departures/Arrivals for selected Airport by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                    plotOutput("AirlineDepartureHrORD")
+                )
+              )
         )
-        
       ) # end of TabItems 
       
     ), # end of DashboardBody
@@ -367,6 +393,35 @@ server <- function(input, output) {
     time <- factor(time, levels = temp)
     
     time
+  }
+  
+  emptyarray <- function(type)
+  {
+    #empty array so we can plot without any data
+    empty <- NULL
+    if(type == "T")
+    {
+      if (input$Time =="24 hour"){
+        empty$hour <- c("0:00","1:00", "2:00", "3:00", "4:00", "5:00", "6:00", "7:00", "8:00", "9:00", "10:00", "11:00", "12:00","13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00");
+      }
+      else{
+        empty$hour <- c("12:00 AM", "1:00 AM", "2:00 AM", "3:00 AM", "4:00 AM", "5:00 AM", "6:00 AM", "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM", "10:00 PM", "11:00 PM");
+      }
+      empty$type <- c( rep("Arrival", times = 12), rep("Departure", times = 12))
+      empty$hour <- set_time_factor(empty$hour)
+      empty$count <- rep(0L, times = 24)
+    }
+    if(type == "M")
+    {
+      empty$month =  month.abb
+      empty$month <- factor(empty$month, levels = month.abb)
+      empty$type <- c( rep("Arrival", times = 6), rep("Departure", times = 6))
+      empty$count <- rep(0L, times = 12)
+    }
+    
+    empty <- as.data.frame(empty)
+    
+    empty
   }
   
   ####### Arrivals & Departures: Airlines Dashboard Tab
@@ -771,6 +826,7 @@ server <- function(input, output) {
       most_common_15_destinations <-most_common_15_destinations %>%  group_by(Month) %>%  top_n(n=15, wt = Count)
       most_common_15_destinations$DEST <- rep(most_common_15_destinations$DEST)
       most_common_15_destinations$Month <- month.abb[most_common_15_destinations$Month]
+      most_common_15_destinations$Month <- factor(most_common_15_destinations$Month, levels = month.abb)
       
       ggplot(most_common_15_destinations, aes(x=DEST, y=Month )) +
         geom_tile(aes(fill = Count), colour = "white") + 
@@ -790,6 +846,7 @@ server <- function(input, output) {
       most_common_15_destinations <-most_common_15_destinations %>%  group_by(Month) %>%  top_n(n=15, wt = Count)
       most_common_15_destinations$DEST <- rep(most_common_15_destinations$DEST)
       most_common_15_destinations$Month <- month.abb[most_common_15_destinations$Month]
+      most_common_15_destinations$Month <- factor(most_common_15_destinations$Month, levels = month.abb)
       
       ggplot(most_common_15_destinations, aes(x=DEST, y=Month )) +
         geom_tile(aes(fill = Count), colour = "white") + 
@@ -806,6 +863,7 @@ server <- function(input, output) {
       most_common_15_destinations <-most_common_15_destinations %>%  group_by(Month) %>%  top_n(n=15, wt = Count)
       most_common_15_destinations$DEST <- rep(most_common_15_destinations$DEST)
       most_common_15_destinations$Month <- month.abb[most_common_15_destinations$Month]
+      most_common_15_destinations$Month <- factor(most_common_15_destinations$Month, levels = month.abb)
       
       ggplot(most_common_15_destinations, aes(reorder(DEST, Count), Count, color=DEST), fill=getPalette(colourCount)) +
         geom_point(stat = "identity") +
@@ -824,6 +882,7 @@ server <- function(input, output) {
       most_common_15_destinations <-most_common_15_destinations %>%  group_by(Month) %>%  top_n(n=15, wt = Count)
       most_common_15_destinations$DEST <- rep(most_common_15_destinations$DEST)
       most_common_15_destinations$Month <- month.abb[most_common_15_destinations$Month]
+      
       
       ggplot(most_common_15_destinations, aes(reorder(DEST, Count), Count, color=DEST), fill=getPalette(colourCount)) +
         geom_point(stat = "identity") +
@@ -870,10 +929,10 @@ server <- function(input, output) {
     
     delay_data <- rbind(cd, wd, nd, sd, lad)
     delay_data$month <- month.abb[delay_data$month]
+    delay_data$month <- factor(delay_data$month, levels = month.abb)
     #stacked Area
     #ggplot(delay_data, aes(x=month, y=count, fill=type)) + 
     #  geom_area()
-    
     
     ggplot(delay_data, aes(x=type, y=month )) +
       geom_tile(aes(fill = count), colour = "white") + 
@@ -997,6 +1056,213 @@ server <- function(input, output) {
       )
     
   })
+  
+
+  output$AirlineDepartureHRMDW <- renderPlot({
+    allData2 <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
+    allData2 <- subset(allData2, input$Airline ==  CARRIER)
+    
+    if(!(is.data.frame(allData2) && nrow(allData2)==0 ))
+    {
+      dep_hour <- group_by(allData2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "MDW" ) %>% summarise(count=n())
+      colnames(dep_hour)[1]<-"hour"
+      dep_hour$type = "Departure"
+      
+      arr_hour <- group_by(allData2,hour)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
+      arr_hour$type = "Arrival"
+      
+      data2 <- merge(dep_hour,arr_hour,all=TRUE)
+      data2 <- subset(data2,!is.na(data2$hour))
+      data2$hour<-switch_hour(data2$hour)
+      
+      
+      #set a factor for time baised on what clock we are in
+      data2$hour <- set_time_factor(data2$hour)
+      data2 <- as.data.frame(data2)
+      
+      empty <- emptyarray("T")
+      missingTimes <- empty$hour[!empty$hour %in% data2$hour]
+      empty <- empty[is.element(empty$hour, missingTimes),]
+      data2 <- merge(data2, empty, all= TRUE)
+      
+      
+      data <- data2
+      adj <- -0.3
+      ggplot(data, aes(x=hour,y = count , fill=type)) + 
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x="Hour", y = "Number of Flights") +
+        scale_fill_manual(values=colorsAD) +
+        geom_text(aes(label=count), vjust=adj,
+                  position = position_dodge(0.9), size=3.5)
+    }
+    else
+    {
+      data <- emptyarray("T")
+      adj <- 15
+      ggplot(data, aes(x=hour,y = count , fill=type)) + 
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x="Hour", y = "Number of Flights") +
+        scale_fill_manual(values=colorsAD) +
+        geom_text(aes(label=count), vjust=adj,
+                  position = position_dodge(0.9), size=3.5)
+    }#end Else statement
+    
+  })
+  
+  output$AirlineDepartureHrORD <- renderPlot({
+    
+    allData2 <- subset(allData2, (ORIGIN == "ORD" | DEST == "ORD") )
+    allData2 <- subset(allData2, input$Airline ==  CARRIER)
+    
+    if(!(is.data.frame(allData2) && nrow(allData2)==0 ))
+    {
+      dep_hour <- group_by(allData2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "ORD" ) %>% summarise(count=n())
+      colnames(dep_hour)[1]<-"hour"
+      dep_hour$type = "Departure"
+      
+      arr_hour <- group_by(allData2,hour)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
+      arr_hour$type = "Arrival"
+      
+      data2 <- merge(dep_hour,arr_hour,all=TRUE)
+      data2 <- subset(data2,!is.na(data2$hour))
+      data2$hour<-switch_hour(data2$hour)
+      
+      
+      #set a factor for time baised on what clock we are in
+      data2$hour <- set_time_factor(data2$hour)
+      data2 <- as.data.frame(data2)
+      
+      empty <- emptyarray("T")
+      missingTimes <- empty$hour[!empty$hour %in% data2$hour]
+      empty <- empty[is.element(empty$hour, missingTimes),]
+      data2 <- merge(data2, empty, all= TRUE)
+      
+      
+      data <- data2
+      adj <- -0.3
+      ggplot(data, aes(x=hour,y = count , fill=type)) + 
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x="Hour", y = "Number of Flights") +
+        scale_fill_manual(values=colorsAD) +
+        geom_text(aes(label=count), vjust=adj,
+                  position = position_dodge(0.9), size=3.5)
+    }
+    else
+    {
+      data <- emptyarray("T")
+      adj <- 15
+      ggplot(data, aes(x=hour,y = count , fill=type)) + 
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x="Hour", y = "Number of Flights") +
+        scale_fill_manual(values=colorsAD) +
+        geom_text(aes(label=count), vjust=adj,
+                  position = position_dodge(0.9), size=3.5)+
+        ylim(0, 700)
+    }#end Else statement
+    
+  })
+  
+  output$AirlineArrivalsMonthORD <- renderPlot({
+    allData2 <- subset(allData2, (ORIGIN == "ORD" | DEST == "ORD") )
+    allData2 <- subset(allData2, input$Airline ==  CARRIER)
+    
+    if(!(is.data.frame(allData2) && nrow(allData2)==0 ))
+    {
+      dep_hour <- group_by(allData2,month(allData2$ARR_TIME_new))  %>% select(ORIGIN) %>% filter(ORIGIN== "ORD" ) %>% summarise(count=n())
+      colnames(dep_hour)[1]<-"month"
+      dep_hour$type = "Departure"
+      
+      arr_hour <- group_by(allData2,month(allData2$ARR_TIME_new))  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
+      colnames(arr_hour)[1]<-"month"
+      arr_hour$type = "Arrival"
+      
+      data2 <- merge(dep_hour,arr_hour,all=TRUE)
+      
+      data2 <- as.data.frame(data2)
+      data2$month <- month.abb[data2$month]
+      data2$month <- factor(data2$month, levels = month.abb)
+      
+      empty <- emptyarray("M")
+      missing <- empty$month[!empty$month %in% data2$month]
+      empty <- empty[is.element(empty$month, missing),]
+      data2 <- merge(data2, empty, all= TRUE)
+      
+      data <- data2
+      adj <- -0.3
+      ggplot(data, aes(x=month,y = count , fill=type)) + 
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x="Hour", y = "Number of Flights") +
+        scale_fill_manual(values=colorsAD) +
+        geom_text(aes(label=count), vjust=adj,
+                  position = position_dodge(0.9), size=3.5)
+    }
+    else
+    {
+      data <- emptyarray("M")
+      adj <- 15
+      ggplot(data, aes(x=month,y = count , fill=type)) + 
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x="Month", y = "Number of Flights") +
+        scale_fill_manual(values=colorsAD) +
+        geom_text(aes(label=count), vjust=adj,
+                  position = position_dodge(0.9), size=3.5)+
+        ylim(0, 700)
+    }#end Else statement
+    
+  })
+  
+  
+  output$AirlineArrivalsMonthMDW <- renderPlot({
+    allData2 <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
+    allData2 <- subset(allData2, input$Airline ==  CARRIER)
+    
+    if(!(is.data.frame(allData2) && nrow(allData2)==0 ))
+    {
+      dep_hour <- group_by(allData2,month(allData2$ARR_TIME_new))  %>% select(ORIGIN) %>% filter(ORIGIN== "MDW" ) %>% summarise(count=n())
+      colnames(dep_hour)[1]<-"month"
+      dep_hour$type = "Departure"
+      
+      arr_hour <- group_by(allData2,month(allData2$ARR_TIME_new))  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
+      colnames(arr_hour)[1]<-"month"
+      arr_hour$type = "Arrival"
+      
+      data2 <- merge(dep_hour,arr_hour,all=TRUE)
+      
+      data2 <- as.data.frame(data2)
+      data2$month <- month.abb[data2$month]
+      data2$month <- factor(data2$month, levels = month.abb)
+      
+      empty <- emptyarray("M")
+      missing <- empty$month[!empty$month %in% data2$month]
+      empty <- empty[is.element(empty$month, missing),]
+      data2 <- merge(data2, empty, all= TRUE)
+      
+      
+      
+      data <- data2
+      adj <- -0.3
+      ggplot(data, aes(x=month,y = count , fill=type)) + 
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x="Hour", y = "Number of Flights") +
+        scale_fill_manual(values=colorsAD) +
+        geom_text(aes(label=count), vjust=adj,
+                  position = position_dodge(0.9), size=3.5)
+    }
+    else
+    {
+      data <- emptyarray("M")
+      adj <- 15
+      ggplot(data, aes(x=month,y = count , fill=type)) + 
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x="Month", y = "Number of Flights") +
+        scale_fill_manual(values=colorsAD) +
+        geom_text(aes(label=count), vjust=adj,
+                  position = position_dodge(0.9), size=3.5)+
+        ylim(0, 700)
+    }#end Else statement
+    
+  })
+  
   
 }
 
