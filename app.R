@@ -637,6 +637,11 @@ server <- function(input, output) {
     data4$hour <- set_time_factor(data4$hour)
     data4 <- as.data.frame(data4)
     
+    empty <- emptyarray("T")
+    missingTimes <- empty$hour[!empty$hour %in% data4$hour]
+    empty <- empty[is.element(empty$hour, missingTimes),]
+    data4 <- merge(data4, empty, all= TRUE)
+    
     
     
     ggplot(data4, aes(x=hour,y = count , fill=type)) + 
@@ -1327,8 +1332,81 @@ server <- function(input, output) {
   })
   
   output$DateDepArrHrMDW <- renderPlot({
-    data <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
-    data <- subset(data, input$Airline ==  CARRIER)
+    #Get data for just midway on the selected date
+    data2 <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
+    data2 <- subset(data2, input$date ==  date(ARR_TIME_new))
+    
+    dep_hour <- group_by(data2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "MDW" ) %>% summarise(count=n())
+    colnames(dep_hour)[1]<-"hour"
+    dep_hour$type = "Departure"
+    
+    arr_hour <- group_by(data2,hour)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
+    arr_hour$type = "Arrival"
+    
+    data2 <- merge(dep_hour,arr_hour,all=TRUE)
+    data2 <- subset(data2,!is.na(data2$hour))
+    data2$hour<-switch_hour(data2$hour)
+    
+    
+    #set a factor for time baised on what clock we are in
+    data2$hour <- set_time_factor(data2$hour)
+    data2 <- as.data.frame(data2)
+    
+    empty <- emptyarray("T")
+    missingTimes <- empty$hour[!empty$hour %in% data2$hour]
+    empty <- empty[is.element(empty$hour, missingTimes),]
+    data2 <- merge(data2, empty, all= TRUE)
+    
+    
+    data <- data2
+    adj <- -0.3
+    ggplot(data, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Hour", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=adj,
+                position = position_dodge(0.9), size=3.5)
+    
+    
+  })
+  
+  
+  output$DateDepArrHrORD <- renderPlot({
+    #Get data for just midway on the selected date
+    data2 <- subset(allData2, (ORIGIN == "ORD" | DEST == "ORD") )
+    data2 <- subset(data2, input$date ==  date(ARR_TIME_new))
+    
+    dep_hour <- group_by(data2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "ORD" ) %>% summarise(count=n())
+    colnames(dep_hour)[1]<-"hour"
+    dep_hour$type = "Departure"
+    
+    arr_hour <- group_by(data2,hour)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
+    arr_hour$type = "Arrival"
+    
+    data2 <- merge(dep_hour,arr_hour,all=TRUE)
+    data2 <- subset(data2,!is.na(data2$hour))
+    data2$hour<-switch_hour(data2$hour)
+    
+    
+    #set a factor for time baised on what clock we are in
+    data2$hour <- set_time_factor(data2$hour)
+    data2 <- as.data.frame(data2)
+    
+    empty <- emptyarray("T")
+    missingTimes <- empty$hour[!empty$hour %in% data2$hour]
+    empty <- empty[is.element(empty$hour, missingTimes),]
+    data2 <- merge(data2, empty, all= TRUE)
+    
+    data <- data2
+    adj <- -0.3
+    ggplot(data, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Hour", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=adj,
+                position = position_dodge(0.9), size=3.5)
+    
+    
   })
   
   
