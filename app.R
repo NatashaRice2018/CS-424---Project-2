@@ -104,6 +104,7 @@ ui <-
         # menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
         menuItem("Top Airports", tabName="top_airports"),
         menuItem("Map", tabName="map"),
+        menuItem("Date", tabName="date"),
         menuItem("Airline", tabName="airline"),
         menuItem("Settings", tabName="dashboard")
         # menuItem("Top Airlines", tabName="top_airlines"),
@@ -317,7 +318,21 @@ ui <-
                     plotOutput("AirlineDepartureHrORD")
                 )
               )
-        )
+        ),
+        tabItem("date",
+                dateInput("date", label = h3("Date input"), value = "2017-01-01", min = "2017-01-01", max = "2017-12-31" ),
+                
+                hr(),
+                fluidRow(column(3, verbatimTextOutput("value"))),
+                fluidRow(
+                  box(title = "Departures/Arrivals for selected Date by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("DateDepArrHrMDW")),
+                  
+                  box(title = "Departures/Arrivals for selected date by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("DateDepArrHrORD")
+                  )
+                )
+                )
       ) # end of TabItems 
       
     ), # end of DashboardBody
@@ -1107,16 +1122,16 @@ server <- function(input, output) {
   
 
   output$AirlineDepartureHRMDW <- renderPlot({
-    allData2 <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
-    allData2 <- subset(allData2, input$Airline ==  CARRIER)
+    data2 <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
+    data2 <- subset(data2, input$Airline ==  CARRIER)
     
-    if(!(is.data.frame(allData2) && nrow(allData2)==0 ))
+    if(!(is.data.frame(data2) && nrow(data2)==0 ))
     {
-      dep_hour <- group_by(allData2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "MDW" ) %>% summarise(count=n())
+      dep_hour <- group_by(data2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "MDW" ) %>% summarise(count=n())
       colnames(dep_hour)[1]<-"hour"
       dep_hour$type = "Departure"
       
-      arr_hour <- group_by(allData2,hour)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
+      arr_hour <- group_by(data2,hour)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
       arr_hour$type = "Arrival"
       
       data2 <- merge(dep_hour,arr_hour,all=TRUE)
@@ -1159,16 +1174,16 @@ server <- function(input, output) {
   
   output$AirlineDepartureHrORD <- renderPlot({
     
-    allData2 <- subset(allData2, (ORIGIN == "ORD" | DEST == "ORD") )
-    allData2 <- subset(allData2, input$Airline ==  CARRIER)
+    data2 <- subset(allData2, (ORIGIN == "ORD" | DEST == "ORD") )
+    data2 <- subset(data2, input$Airline ==  CARRIER)
     
-    if(!(is.data.frame(allData2) && nrow(allData2)==0 ))
+    if(!(is.data.frame(data2) && nrow(data2)==0 ))
     {
-      dep_hour <- group_by(allData2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "ORD" ) %>% summarise(count=n())
+      dep_hour <- group_by(data2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "ORD" ) %>% summarise(count=n())
       colnames(dep_hour)[1]<-"hour"
       dep_hour$type = "Departure"
       
-      arr_hour <- group_by(allData2,hour)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
+      arr_hour <- group_by(data2,hour)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
       arr_hour$type = "Arrival"
       
       data2 <- merge(dep_hour,arr_hour,all=TRUE)
@@ -1211,16 +1226,16 @@ server <- function(input, output) {
   })
   
   output$AirlineArrivalsMonthORD <- renderPlot({
-    allData2 <- subset(allData2, (ORIGIN == "ORD" | DEST == "ORD") )
-    allData2 <- subset(allData2, input$Airline ==  CARRIER)
+    data2 <- subset(allData2, (ORIGIN == "ORD" | DEST == "ORD") )
+    data2 <- subset(data2, input$Airline ==  CARRIER)
     
-    if(!(is.data.frame(allData2) && nrow(allData2)==0 ))
+    if(!(is.data.frame(data2) && nrow(data2)==0 ))
     {
-      dep_hour <- group_by(allData2,month(allData2$ARR_TIME_new))  %>% select(ORIGIN) %>% filter(ORIGIN== "ORD" ) %>% summarise(count=n())
+      dep_hour <- group_by(data2,month(data2$ARR_TIME_new))  %>% select(ORIGIN) %>% filter(ORIGIN== "ORD" ) %>% summarise(count=n())
       colnames(dep_hour)[1]<-"month"
       dep_hour$type = "Departure"
       
-      arr_hour <- group_by(allData2,month(allData2$ARR_TIME_new))  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
+      arr_hour <- group_by(data2,month(data2$ARR_TIME_new))  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
       colnames(arr_hour)[1]<-"month"
       arr_hour$type = "Arrival"
       
@@ -1239,7 +1254,7 @@ server <- function(input, output) {
       adj <- -0.3
       ggplot(data, aes(x=month,y = count , fill=type)) + 
         geom_bar(stat = "identity", position = "dodge") +
-        labs(x="Hour", y = "Number of Flights") +
+        labs(x="Month", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
                   position = position_dodge(0.9), size=3.5)
@@ -1261,16 +1276,16 @@ server <- function(input, output) {
   
   
   output$AirlineArrivalsMonthMDW <- renderPlot({
-    allData2 <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
-    allData2 <- subset(allData2, input$Airline ==  CARRIER)
+    data2 <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
+    data2 <- subset(data2, input$Airline ==  CARRIER)
     
-    if(!(is.data.frame(allData2) && nrow(allData2)==0 ))
+    if(!(is.data.frame(data2) && nrow(data2)==0 ))
     {
-      dep_hour <- group_by(allData2,month(allData2$ARR_TIME_new))  %>% select(ORIGIN) %>% filter(ORIGIN== "MDW" ) %>% summarise(count=n())
+      dep_hour <- group_by(data2,month(data2$ARR_TIME_new))  %>% select(ORIGIN) %>% filter(ORIGIN== "MDW" ) %>% summarise(count=n())
       colnames(dep_hour)[1]<-"month"
       dep_hour$type = "Departure"
       
-      arr_hour <- group_by(allData2,month(allData2$ARR_TIME_new))  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
+      arr_hour <- group_by(data2,month(data2$ARR_TIME_new))  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
       colnames(arr_hour)[1]<-"month"
       arr_hour$type = "Arrival"
       
@@ -1291,7 +1306,7 @@ server <- function(input, output) {
       adj <- -0.3
       ggplot(data, aes(x=month,y = count , fill=type)) + 
         geom_bar(stat = "identity", position = "dodge") +
-        labs(x="Hour", y = "Number of Flights") +
+        labs(x="Month", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
                   position = position_dodge(0.9), size=3.5)
@@ -1309,6 +1324,11 @@ server <- function(input, output) {
         ylim(0, 700)
     }#end Else statement
     
+  })
+  
+  output$DateDepArrHrMDW <- renderPlot({
+    data <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
+    data <- subset(data, input$Airline ==  CARRIER)
   })
   
   
