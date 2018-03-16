@@ -255,10 +255,12 @@ ui <-
                   )
                 ),
                 fluidRow (
-                  box(title = "Delays Change By month", solidHeader = TRUE, status = "primary",width = 6,
-                      plotOutput("NumAndTypeOfDelayChange")
+                  box(title = "Delays Change By month Midway", solidHeader = TRUE, status = "primary",width = 6,
+                      plotOutput("NumAndTypeOfDelayChangeMDW")),
+                      box(title = "Delays Change By month O'Hare", solidHeader = TRUE, status = "primary",width = 6,
+                          plotOutput("NumAndTypeOfDelayChangeORD"))
                   )
-                )
+                
         ),
         tabItem("top_airports",
                 fluidRow(
@@ -895,32 +897,32 @@ server <- function(input, output) {
   
   
   
-  output$NumAndTypeOfDelayChange <- renderPlot({
+  output$NumAndTypeOfDelayChangeMDW <- renderPlot({
     
-    #NAS_DELAY !=0 | LATE_AIRCRAFT_DELAY != 0
+    data <- subset(allData2, DEST == "MDW" | ORIGIN == "MDW" )
     
     #get all flights with delays
-    temp <- subset(allData2, CARRIER_DELAY != 0)
+    temp <- subset(data, CARRIER_DELAY != 0)
     cd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(CARRIER_DELAY) %>% summarise(count=n())
     colnames(cd)<-c("month", "count")
     cd$type = "Carrier Delay"
     
-    temp <- subset(allData2, WEATHER_DELAY != 0)
+    temp <- subset(data, WEATHER_DELAY != 0)
     wd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(WEATHER_DELAY) %>% summarise(count=n())
     colnames(wd)<-c("month", "count")
     wd$type = "Weather Delay"
     
-    temp <- subset(allData2, NAS_DELAY != 0)
+    temp <- subset(data, NAS_DELAY != 0)
     nd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(NAS_DELAY) %>% summarise(count=n())
     colnames(nd)<-c("month", "count")
     nd$type = "NAS Delay"
     
-    temp <- subset(allData2, SECURITY_DELAY != 0)
+    temp <- subset(data, SECURITY_DELAY != 0)
     sd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(SECURITY_DELAY) %>% summarise(count=n())
     colnames(sd)<-c("month", "count")
     sd$type = "Security Delay"
     
-    temp <- subset(allData2, LATE_AIRCRAFT_DELAY != 0)
+    temp <- subset(data, LATE_AIRCRAFT_DELAY != 0)
     lad <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(LATE_AIRCRAFT_DELAY) %>% summarise(count=n())
     colnames(lad)<-c("month", "count")
     lad$type = "Late Aircraft Delay"
@@ -941,6 +943,52 @@ server <- function(input, output) {
     
   })
   
+  
+  output$NumAndTypeOfDelayChangeORD <- renderPlot({
+    
+    data <- subset(allData2, DEST == "ORD" | ORIGIN == "ORD" )
+    
+    #get all flights with delays
+    temp <- subset(data, CARRIER_DELAY != 0)
+    cd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(CARRIER_DELAY) %>% summarise(count=n())
+    colnames(cd)<-c("month", "count")
+    cd$type = "Carrier Delay"
+    
+    temp <- subset(data, WEATHER_DELAY != 0)
+    wd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(WEATHER_DELAY) %>% summarise(count=n())
+    colnames(wd)<-c("month", "count")
+    wd$type = "Weather Delay"
+    
+    temp <- subset(data, NAS_DELAY != 0)
+    nd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(NAS_DELAY) %>% summarise(count=n())
+    colnames(nd)<-c("month", "count")
+    nd$type = "NAS Delay"
+    
+    temp <- subset(data, SECURITY_DELAY != 0)
+    sd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(SECURITY_DELAY) %>% summarise(count=n())
+    colnames(sd)<-c("month", "count")
+    sd$type = "Security Delay"
+    
+    temp <- subset(data, LATE_AIRCRAFT_DELAY != 0)
+    lad <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(LATE_AIRCRAFT_DELAY) %>% summarise(count=n())
+    colnames(lad)<-c("month", "count")
+    lad$type = "Late Aircraft Delay"
+    
+    #join all delay types into one table
+    
+    delay_data <- rbind(cd, wd, nd, sd, lad)
+    delay_data$month <- month.abb[delay_data$month]
+    delay_data$month <- factor(delay_data$month, levels = month.abb)
+    #stacked Area
+    #ggplot(delay_data, aes(x=month, y=count, fill=type)) + 
+    #  geom_area()
+    
+    ggplot(delay_data, aes(x=type, y=month )) +
+      geom_tile(aes(fill = count), colour = "white") + 
+      scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+      theme(panel.background = element_rect(fill = 'white'))
+    
+  })
   
   output$NumAndTypeOfDelayChangeStack <- renderPlot({
     
