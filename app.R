@@ -102,15 +102,15 @@ ui <-
         menuItem("Arrivals & Departures", tabName="arrivals_departures"),
         menuItem("Arrivals & Departures: Airlines", tabName="arrivals_departures_airlines"),
         menuItem("Delays", tabName="delays"),
-        # menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
+        menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
         menuItem("Top Airports", tabName="top_airports"),
         menuItem("Map", tabName="map"),
         menuItem("Date", tabName="date"),
         menuItem("Day", tabName="day"),
         menuItem("Airline", tabName="airline"),
-        menuItem("Settings", tabName="dashboard")
-        # menuItem("Top Airlines", tabName="top_airlines"),
-        # menuItem("10 Interesting Days", tabName="interesting_days")
+        menuItem("Settings", tabName="dashboard"),
+        menuItem("Top Airlines", tabName="top_airlines"),
+        menuItem("10 Interesting Days", tabName="interesting_days")
         
       )
       
@@ -297,6 +297,33 @@ ui <-
                     plotlyOutput("MapArrivalePercent")
                 )
         ),
+        
+        tabItem("interesting_days",
+                
+                
+                
+                fluidRow(
+                  
+                  box(
+                    
+                    selectInput("top_airports_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
+                    
+                  )),
+                
+                
+                
+                fluidRow(
+                  
+                  box(title = "10 Bussiest Days/Holidays ", solidHeader = TRUE, status = "primary",width = 4,
+                      
+                      dataTableOutput("interestingDays"))
+                  
+                  
+                  
+                ) 
+                
+        ),
+        
         tabItem("airline",
                 fluidRow(
                   box(
@@ -595,6 +622,25 @@ server <- function(input, output) {
     
   )
   
+  output$interestingDays<- DT::renderDataTable(
+    
+    DT::datatable({
+      
+      
+      
+      HolidayType <- c("Christmas","New Year","Thanksgiving","Independence Day","Labor Day","Columbus Day","Lollapaloza", "Veterans Day")
+      
+      Date <- c("Maybe","Maybe","Yes","Maybe","Maybe","No","Yes","No")
+      
+      results <- table(HolidayType, Date)
+      
+      results
+      
+      
+      
+    })
+    
+  )
   
   # Bar Graph: Arrivals and Departures by Weekday
   output$BarByWeekday<- renderPlot({
