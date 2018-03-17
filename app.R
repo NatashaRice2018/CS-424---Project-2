@@ -88,6 +88,7 @@ months <- c(1:12)
 loc <- c('MDW','ORD')
 airlines <- unique(allData2$CARRIER)
 days <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+delays_type<- colnames(allData2)[23:27]
 # Define UI for application that draws a histogram
 ui <- 
   
@@ -260,9 +261,16 @@ ui <-
                 fluidRow (
                   box(title = "Delays Change By month Midway", solidHeader = TRUE, status = "primary",width = 6,
                       plotOutput("NumAndTypeOfDelayChangeMDW")),
-                      box(title = "Delays Change By month O'Hare", solidHeader = TRUE, status = "primary",width = 6,
-                          plotOutput("NumAndTypeOfDelayChangeORD"))
-                  )
+                  box(title = "Delays Change By month O'Hare", solidHeader = TRUE, status = "primary",width = 6,
+                      plotOutput("NumAndTypeOfDelayChangeORD"))
+                ),
+                fluidRow(
+                  box(selectInput("delay_type", "Select delay type", choices=delays_type, selected = NULL), width=8),
+                  box(title = "Delay Type Change By month", solidHeader = TRUE, status = "primary",width = 6,
+                      plotOutput("delay_type_month")),
+                  box(title = "Delay Type Change By hour", solidHeader = TRUE, status = "primary",width = 10, plotOutput("delay_type_hour"))
+                  
+                )
                 
         ),
         tabItem("top_airports",
@@ -287,11 +295,22 @@ ui <-
                   box(title = "top 15 airports by month Midway", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("Top15DestAirportsMdw"))
                   
+                ),
+                fluidRow(
+                  #box(selectInput("top50_airport","Pick a airport",choices = top50, selected = '',width = 4)),
+                  box(title = "Top 50 airports", solidHeader = TRUE, status = "primary", width = 6,
+                      uiOutput("top50Controls") ),
+                  box(title = "top 50 airports by hour", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("Top50Airport_hour")),
+                  box(title = "top 50 airports by month", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("Top50Airports_month"))
+                  
+                  
                 )
-          ),
+        ),
         tabItem("map",
                 box(title = "Percentage of Arrivals from Illinois", solidHeader = TRUE, status = "primary", width = 6,
-                plotlyOutput("MapDeparturePercent")
+                    plotlyOutput("MapDeparturePercent")
                 ),
                 box(title = "Percentage of Departures from Illinois", solidHeader = TRUE, status = "primary", width = 6,
                     plotlyOutput("MapArrivalePercent")
@@ -334,19 +353,19 @@ ui <-
                 fluidRow(
                   box(title = "Arrivals for selected Airport by month at Midway", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("AirlineArrivalsMonthMDW")),
-                
-                box(title = "Arrivals for selected Airport by month at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
-                    plotOutput("AirlineArrivalsMonthORD")
-                    )
-              ),
-              fluidRow(
-                box(title = "Departures/Arrivals for selected Airport by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
-                    plotOutput("AirlineDepartureHRMDW")),
-                
-                box(title = "Departures/Arrivals for selected Airport by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
-                    plotOutput("AirlineDepartureHrORD")
+                  
+                  box(title = "Arrivals for selected Airport by month at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("AirlineArrivalsMonthORD")
+                  )
+                ),
+                fluidRow(
+                  box(title = "Departures/Arrivals for selected Airport by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("AirlineDepartureHRMDW")),
+                  
+                  box(title = "Departures/Arrivals for selected Airport by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("AirlineDepartureHrORD")
+                  )
                 )
-              )
         ),
         tabItem("date",
                 dateInput("date", label = h3("Date input"), value = "2017-01-01", min = "2017-01-01", max = "2017-12-31" ),
@@ -369,12 +388,12 @@ ui <-
                       plotOutput("DateDelayORD")
                   )
                 )
-              ),
+        ),
         tabItem("day",
                 fluidRow(
-                box(
-                  selectInput("day", "Day of the Week ", choices=days), width=4
-                )),
+                  box(
+                    selectInput("day", "Day of the Week ", choices=days), width=4
+                  )),
                 fluidRow(
                   box(title = "Departures/Arrivals for selected Date by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("DayDepArrHrMDW")),
@@ -730,6 +749,59 @@ server <- function(input, output) {
                 position = position_dodge(0.9), size=3.5)
   })
   
+  # select delay type 
+  
+  output$delay_type_month <- renderPlot({
+    
+    coln <- match(input$delay_type,names(allData2))
+    temp <- subset(allData2,allData2[coln]>0)
+    cd <- group_by(temp, month(temp$ARR_TIME_new) )  %>% select(input$delay_type) %>% summarise(count=n())
+    colnames(cd)<-c("month", "count")
+    cd$month <- month.abb[cd$month]
+    cd$month <- factor(cd$month, levels = month.abb)
+    cd <- as.data.frame(cd)
+    ggplot(cd, aes(x=month,y = count)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Month", y = "Number of Delay") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+    
+    
+    
+  }
+  
+  )
+  
+  output$delay_type_hour <- renderPlot({
+    
+    coln <- match(input$delay_type,names(allData2))
+    temp <- subset(allData2,allData2[coln]>0)
+    
+    dep_hour <- group_by(temp,hour_dep)  %>% select(input$delay_type) %>% summarise(count=n())
+    colnames(dep_hour)[1]<-"hour"
+    dep_hour$type = "Departure"
+    
+    arr_hour <- group_by(temp,hour)  %>% select(input$delay_type) %>% summarise(count=n())
+    arr_hour$type = "Arrival"
+    
+    data2 <- merge(dep_hour,arr_hour,all=TRUE)
+    data2 <- subset(data2,!is.na(data2$hour))
+    data2$hour<-switch_hour(data2$hour)
+    #set a factor for time baised on what clock we are in
+    data2$hour <- set_time_factor(data2$hour)
+    data2 <- as.data.frame(data2)
+    
+    ggplot(data2, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Hour", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+  }
+  
+  )
+  
   ######### Top Airports Dashboard Tab
   # Table: the number of flights for the most common 15 destination and airports airports for selected airport
   output$tab5<- DT::renderDataTable(
@@ -779,6 +851,71 @@ server <- function(input, output) {
       geom_text(aes(label=count), vjust=-0.3,
                 position = position_dodge(0.9), size=3.5)
   })
+  
+  # top 50 airport selected 
+  output$top50Controls <- renderUI({
+    #justOneMonthReactive <- topAirportsMonth()
+    
+    top50_airport <- group_by(allData2,DEST)  %>% summarise(count=n()) %>% arrange(desc(count)) %>% top_n(50)
+    selectInput("top50","Choose Cities", top50_airport$DEST,selected = NULL )
+  }
+  
+  )
+  
+  output$Top50Airport_hour <- renderPlot({
+    # justOneMonthReactive <- arrivalsDeparturesMonth()
+    
+    dep_hour <- group_by(allData2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN==input$top50 ) %>% summarise(count=n())
+    colnames(dep_hour)[1]<-"hour"
+    dep_hour$type = "Departure"
+    
+    arr_hour <- group_by(allData2,hour)  %>% select(DEST) %>% filter(DEST==input$top50) %>% summarise(count=n())
+    arr_hour$type = "Arrival"
+    
+    data2 <- merge(dep_hour,arr_hour,all=TRUE)
+    data2 <- subset(data2,!is.na(data2$hour))
+    data2$hour<-switch_hour(data2$hour)
+    #set a factor for time baised on what clock we are in
+    data2$hour <- set_time_factor(data2$hour)
+    data2 <- as.data.frame(data2)
+    
+    ggplot(data2, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Hour", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+    
+  })
+  
+  output$Top50Airports_month <- renderPlot(
+    {
+      
+      dep_month <- group_by(allData2,month(allData2$DEP_TIME_new) ) %>% select(ORIGIN) %>% filter(ORIGIN==input$top50 ) %>% summarise(count=n())
+      colnames(dep_month)[1]<-"month"
+      dep_month$type = "Departure"
+      
+      arr_month <- group_by(allData2,month(allData2$ARR_TIME_new))  %>% select(DEST) %>% filter(DEST==input$top50) %>% summarise(count=n())
+      colnames(arr_month)[1]<-"month"
+      arr_month$type = "Arrival"
+      
+      data2 <- merge(dep_month,arr_month,all=TRUE)
+      data2 <- subset(data2,!is.na(data2$month))
+      #set a factor for time baised on what clock we are in
+      data2$month <- month.abb[data2$month]
+      data2$month <- factor(data2$month, levels = month.abb)
+      data2 <- as.data.frame(data2)
+      
+      ggplot(data2, aes(x=month,y = count , fill=type)) + 
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x="Month", y = "Number of Flights") +
+        scale_fill_manual(values=colorsAD) +
+        geom_text(aes(label=count), vjust=-0.3,
+                  position = position_dodge(0.9), size=3.5)
+      
+    }
+  )
+  
   
   output$HeatArrMonORD <- renderPlot(
     {
@@ -1141,7 +1278,7 @@ server <- function(input, output) {
     dest$percent <- percent(dest$CountDest/sum(dest$CountDest))
     
     dest$hover <- with(dest, paste(State, '<br>', "Total Visits", CountDest , "<br>",
-                               "Percentage of total Visitors", percent))
+                                   "Percentage of total Visitors", percent))
     # give state boundaries a white border
     l <- list(color = toRGB("white"), width = 2)
     # specify some map projection/options
@@ -1152,7 +1289,7 @@ server <- function(input, output) {
       lakecolor = toRGB('white')
     )
     
-     plot_geo(dest, locationmode = 'USA-states') %>%
+    plot_geo(dest, locationmode = 'USA-states') %>%
       add_trace(
         z = ~CountDest, text = ~hover, locations = ~code,
         color = ~CountDest, colors = 'Purples'
@@ -1179,7 +1316,7 @@ server <- function(input, output) {
     arriv$percent <- percent(arriv$CountDest/sum(arriv$CountDest))
     
     arriv$hover <- with(arriv, paste(State, '<br>', "Total Visits", CountDest , "<br>",
-                                   "Percentage of total Visitors", percent))
+                                     "Percentage of total Visitors", percent))
     # give state boundaries a white border
     l <- list(color = toRGB("white"), width = 2)
     # specify some map projection/options
@@ -1203,7 +1340,7 @@ server <- function(input, output) {
     
   })
   
-
+  
   output$AirlineDepartureHRMDW <- renderPlot({
     data2 <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
     data2 <- subset(data2, input$Airline ==  CARRIER)
@@ -1567,18 +1704,18 @@ server <- function(input, output) {
     cd <- group_by(temp, temp$hour )  %>% select(CARRIER_DELAY) %>% summarise(count=n())
     if(!(is.data.frame(cd) && nrow(cd)==0 ))
     {
-    colnames(cd)<-c("hour", "count")
-    cd$type = "Carrier Delay"
-    final <- merge(final, cd, all= TRUE)
+      colnames(cd)<-c("hour", "count")
+      cd$type = "Carrier Delay"
+      final <- merge(final, cd, all= TRUE)
     }
     
     temp <- subset(data, WEATHER_DELAY != 0)
     wd <- group_by(temp, temp$hour )  %>% select(WEATHER_DELAY) %>% summarise(count=n())
     if(!(is.data.frame(wd) && nrow(wd)==0 ))
     {
-    colnames(wd)<-c("hour", "count")
-    wd$type = "Weather Delay"
-    final <- merge(final, wd, all= TRUE)
+      colnames(wd)<-c("hour", "count")
+      wd$type = "Weather Delay"
+      final <- merge(final, wd, all= TRUE)
     }
     
     temp <- subset(data, NAS_DELAY != 0)
@@ -1603,9 +1740,9 @@ server <- function(input, output) {
     lad <- group_by(temp, temp$hour )  %>% select(LATE_AIRCRAFT_DELAY) %>% summarise(count=n())
     if(!(is.data.frame(lad) && nrow(lad)==0 ))
     {
-    colnames(lad)<-c("hour", "count")
-    lad$type = "Late Aircraft Delay"
-    final <- merge(final, lad, all= TRUE)
+      colnames(lad)<-c("hour", "count")
+      lad$type = "Late Aircraft Delay"
+      final <- merge(final, lad, all= TRUE)
     }
     
     delay_data <- final
