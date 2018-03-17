@@ -87,6 +87,7 @@ t<-c("24 hour","12 hour am/pm")
 months <- c(1:12)
 loc <- c('MDW','ORD')
 airlines <- unique(allData2$CARRIER)
+days <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 # Define UI for application that draws a histogram
 ui <- 
   
@@ -105,6 +106,7 @@ ui <-
         menuItem("Top Airports", tabName="top_airports"),
         menuItem("Map", tabName="map"),
         menuItem("Date", tabName="date"),
+        menuItem("Day", tabName="day"),
         menuItem("Airline", tabName="airline"),
         menuItem("Settings", tabName="dashboard")
         # menuItem("Top Airlines", tabName="top_airlines"),
@@ -340,7 +342,29 @@ ui <-
                       plotOutput("DateDelayORD")
                   )
                 )
+              ),
+        tabItem("day",
+                fluidRow(
+                box(
+                  selectInput("day", "Day of the Week ", choices=days), width=4
+                )),
+                fluidRow(
+                  box(title = "Departures/Arrivals for selected Date by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("DayDepArrHrMDW")),
+                  
+                  box(title = "Departures/Arrivals for selected date by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("DayDepArrHrORD")
+                  )
+                ),
+                fluidRow(
+                  box(title = "Delays for selected Date by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("DayDelayMDW")),
+                  
+                  box(title = "Delays for selected date by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("DayDelayORD")
+                  )
                 )
+        )
       ) # end of TabItems 
       
     ), # end of DashboardBody
@@ -1536,6 +1560,222 @@ server <- function(input, output) {
     colnames(lad)<-c("hour", "count")
     lad$type = "Late Aircraft Delay"
     final <- merge(final, lad, all= TRUE)
+    }
+    
+    delay_data <- final
+    #join all delay types into one table
+    
+    delay_data$hour<-switch_hour(delay_data$hour)
+    #set a factor for time baised on what clock we are in
+    delay_data$hour <- set_time_factor(delay_data$hour)
+    
+    #stacked Area
+    #ggplot(delay_data, aes(x=month, y=count, fill=type)) + 
+    #  geom_area()
+    
+    ggplot(delay_data, aes(x=type, y=hour )) +
+      geom_tile(aes(fill = count), colour = "white") + 
+      scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+      theme(panel.background = element_rect(fill = 'white'))
+  })
+  
+  output$DayDepArrHrMDW <- renderPlot({
+    #Get data for just midway on the selected date
+    data2 <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
+    data2 <- subset(data2, input$day == weekday)
+    
+    dep_hour <- group_by(data2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "MDW" ) %>% summarise(count=n())
+    colnames(dep_hour)[1]<-"hour"
+    dep_hour$type = "Departure"
+    
+    arr_hour <- group_by(data2,hour)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
+    arr_hour$type = "Arrival"
+    
+    data2 <- merge(dep_hour,arr_hour,all=TRUE)
+    data2 <- subset(data2,!is.na(data2$hour))
+    data2$hour<-switch_hour(data2$hour)
+    
+    
+    #set a factor for time baised on what clock we are in
+    data2$hour <- set_time_factor(data2$hour)
+    data2 <- as.data.frame(data2)
+    
+    empty <- emptyarray("T")
+    missingTimes <- empty$hour[!empty$hour %in% data2$hour]
+    empty <- empty[is.element(empty$hour, missingTimes),]
+    data2 <- merge(data2, empty, all= TRUE)
+    
+    
+    data <- data2
+    adj <- -0.3
+    ggplot(data, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Hour", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=adj,
+                position = position_dodge(0.9), size=3.5)
+    
+    
+  })
+  
+  output$DayDepArrHrORD <- renderPlot({
+    #Get data for just midway on the selected date
+    data2 <- subset(allData2, (ORIGIN == "ORD" | DEST == "ORD") )
+    data2 <- subset(data2, input$day == weekday)
+    
+    dep_hour <- group_by(data2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "ORD" ) %>% summarise(count=n())
+    colnames(dep_hour)[1]<-"hour"
+    dep_hour$type = "Departure"
+    
+    arr_hour <- group_by(data2,hour)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
+    arr_hour$type = "Arrival"
+    
+    data2 <- merge(dep_hour,arr_hour,all=TRUE)
+    data2 <- subset(data2,!is.na(data2$hour))
+    data2$hour<-switch_hour(data2$hour)
+    
+    
+    #set a factor for time baised on what clock we are in
+    data2$hour <- set_time_factor(data2$hour)
+    data2 <- as.data.frame(data2)
+    
+    empty <- emptyarray("T")
+    missingTimes <- empty$hour[!empty$hour %in% data2$hour]
+    empty <- empty[is.element(empty$hour, missingTimes),]
+    data2 <- merge(data2, empty, all= TRUE)
+    
+    
+    data <- data2
+    adj <- -0.3
+    ggplot(data, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Hour", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=adj,
+                position = position_dodge(0.9), size=3.5)
+    
+    
+  })
+  
+  output$DayDelayMDW <- renderPlot({
+    data <- subset(allData2, DEST == "MDW" | ORIGIN == "MDW" )
+    data <- subset(data,input$day == weekday)
+    
+    final <- data.frame(matrix(ncol = 3, nrow = 0))
+    colnames(final)<-c("hour","count", "type")
+    #get all flights with delays
+    temp <- subset(data, CARRIER_DELAY != 0)
+    cd <- group_by(temp, temp$hour )  %>% select(CARRIER_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(cd) && nrow(cd)==0 ))
+    {
+      colnames(cd)<-c("hour", "count")
+      cd$type = "Carrier Delay"
+      final <- merge(final, cd, all= TRUE)
+    }
+    
+    temp <- subset(data, WEATHER_DELAY != 0)
+    wd <- group_by(temp, temp$hour )  %>% select(WEATHER_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(wd) && nrow(wd)==0 ))
+    {
+      colnames(wd)<-c("hour", "count")
+      wd$type = "Weather Delay"
+      final <- merge(final, wd, all= TRUE)
+    }
+    
+    temp <- subset(data, NAS_DELAY != 0)
+    nd <- group_by(temp, temp$hour )  %>% select(NAS_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(nd) && nrow(nd)==0 ))
+    {
+      colnames(nd)<-c("hour", "count")
+      nd$type = "NAS Delay"
+      final <- merge(final, nd, all= TRUE)
+    }
+    
+    temp <- subset(data, SECURITY_DELAY != 0)
+    sd <- group_by(temp, temp$hour )  %>% select(SECURITY_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(sd) && nrow(sd)==0 ))
+    {
+      colnames(sd)<-c("hour", "count")
+      sd$type = "Security Delay"
+      final <- merge(final, sd, all= TRUE)
+    }
+    
+    temp <- subset(data, LATE_AIRCRAFT_DELAY != 0)
+    lad <- group_by(temp, temp$hour )  %>% select(LATE_AIRCRAFT_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(lad) && nrow(lad)==0 ))
+    {
+      colnames(lad)<-c("hour", "count")
+      lad$type = "Late Aircraft Delay"
+      final <- merge(final, lad, all= TRUE)
+    }
+    
+    delay_data <- final
+    #join all delay types into one table
+    
+    delay_data$hour<-switch_hour(delay_data$hour)
+    #set a factor for time baised on what clock we are in
+    delay_data$hour <- set_time_factor(delay_data$hour)
+    
+    #stacked Area
+    #ggplot(delay_data, aes(x=month, y=count, fill=type)) + 
+    #  geom_area()
+    
+    ggplot(delay_data, aes(x=type, y=hour )) +
+      geom_tile(aes(fill = count), colour = "white") + 
+      scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
+      theme(panel.background = element_rect(fill = 'white'))
+  })
+  
+  output$DayDelayORD <- renderPlot({
+    data <- subset(allData2, DEST == "ORD" | ORIGIN == "ORD" )
+    data <- subset(data, input$day == weekday)
+    
+    final <- data.frame(matrix(ncol = 3, nrow = 0))
+    colnames(final)<-c("hour","count", "type")
+    #get all flights with delays
+    temp <- subset(data, CARRIER_DELAY != 0)
+    cd <- group_by(temp, temp$hour )  %>% select(CARRIER_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(cd) && nrow(cd)==0 ))
+    {
+      colnames(cd)<-c("hour", "count")
+      cd$type = "Carrier Delay"
+      final <- merge(final, cd, all= TRUE)
+    }
+    
+    temp <- subset(data, WEATHER_DELAY != 0)
+    wd <- group_by(temp, temp$hour )  %>% select(WEATHER_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(wd) && nrow(wd)==0 ))
+    {
+      colnames(wd)<-c("hour", "count")
+      wd$type = "Weather Delay"
+      final <- merge(final, wd, all= TRUE)
+    }
+    
+    temp <- subset(data, NAS_DELAY != 0)
+    nd <- group_by(temp, temp$hour )  %>% select(NAS_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(nd) && nrow(nd)==0 ))
+    {
+      colnames(nd)<-c("hour", "count")
+      nd$type = "NAS Delay"
+      final <- merge(final, nd, all= TRUE)
+    }
+    
+    temp <- subset(data, SECURITY_DELAY != 0)
+    sd <- group_by(temp, temp$hour )  %>% select(SECURITY_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(sd) && nrow(sd)==0 ))
+    {
+      colnames(sd)<-c("hour", "count")
+      sd$type = "Security Delay"
+      final <- merge(final, sd, all= TRUE)
+    }
+    
+    temp <- subset(data, LATE_AIRCRAFT_DELAY != 0)
+    lad <- group_by(temp, temp$hour )  %>% select(LATE_AIRCRAFT_DELAY) %>% summarise(count=n())
+    if(!(is.data.frame(lad) && nrow(lad)==0 ))
+    {
+      colnames(lad)<-c("hour", "count")
+      lad$type = "Late Aircraft Delay"
+      final <- merge(final, lad, all= TRUE)
     }
     
     delay_data <- final
