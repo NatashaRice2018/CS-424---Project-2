@@ -16,12 +16,13 @@ library(jpeg)
 library(grid)
 library(leaflet)
 library(dplyr)
+library(plotly)
 #Libaries needed to read in data faster.
 library(data.table)
 library(fasttime)
 library(ggridges)
 #libaries for the map
-library(plotly)
+library(ggrepel)
 
 
 # assume all of the tsv files in this directory are data of the same kind that I want to visualize
@@ -62,6 +63,8 @@ allData2$weekday_dep <- weekdays(allData2$DEP_TIME_new)
 percent <- function(x, digits = 2, format = "f", ...) {
   paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
 }
+
+
 
 to12hour <- function(v){ 
   if (is.POSIXct(v)==TRUE){
@@ -130,6 +133,9 @@ ui <-
                 fluidRow(
                   box(
                     selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour'), width=4
+                  ),
+                  box(
+                    selectInput("Unit", "Miles or Kilometers ", choices=c("Miles","Kilometers"), selected = 'Miles'), width=4
                   )
                   
                 )
@@ -189,6 +195,17 @@ ui <-
                        plotOutput("HeatDepHrMdw")
                   )
                   
+                ),
+                fluidRow(
+                  
+                  box(title = "Distance:", solidHeader = TRUE, status = "primary", width = 4,
+                      uiOutput("distance") ),
+                  box(title = "The number of Arrivals and Departures to and from different distances", solidHeader = TRUE, status = "primary", width = 8,plotOutput("numDistance")),
+                  box(title = "The number of Flight over Distance Group",solidHeader = TRUE, status = "primary",width = 8,plotOutput("numDistance_bar"))
+                ),
+                fluidRow(
+                  box(title = "Flight Time:", solidHeader = TRUE, status = "primary", width = 8,
+                      plotOutput("numFlightTime") )
                 )
                 
         ),
@@ -448,6 +465,16 @@ server <- function(input, output) {
     paste("You chose month:", input$Month, "and airport:", input$Airport)
   })
   
+  switch_km<- function(x){
+    tem <- x
+    if(input$Unit =="Kilometers"){
+      tem <- tem *1.61
+    } 
+    tem 
+  }
+    
+    
+    
   switch_hour<- function(x){
     c <- x
     #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
@@ -520,6 +547,83 @@ server <- function(input, output) {
   }
   
   ####### Arrivals & Departures: Airlines Dashboard Tab
+# Allow a user to compare how many arrivals and departures are to and from different distances away.
+  output$distance <- renderUI({
+    #justOneMonthReactive <- topAirportsMonth()
+    tem <- allData2$DISTANCE
+    allData2$DISTANCE <- switch_km(allData2$DISTANCE)
+    n_arrival <- group_by(allData2,DISTANCE,DEST)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport) %>% summarise(Count=n()) %>% arrange(desc(DISTANCE))
+    #top50_airport <- group_by(allData2,DEST)  %>% summarise(count=n()) %>% arrange(desc(count)) %>% top_n(50)
+    #n_depart <- group_by(allData2,DISTANCE,ORIGIN)  %>% select(ORIGIN,DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(Count=n()) %>% arrange(desc(count))
+    allData2$DISTANCE <- tem
+    #data1 <- merge(n_arrival,n_depart,all=TRUE)
+    selectInput("distance",h3(paste("Choose Distance away from or to", input$arrivals_departures_airport)), n_arrival$DISTANCE,selected = NULL )
+    #textOutput('text_distance')
+    
+  })
+ output$numDistance_bar <- renderPlot({
+   tem <- allData2$DISTANCE
+   allData2$DISTANCE <- switch_km(allData2$DISTANCE)
+   tem1 <- c(0,249,499,749,999,1249,1499,1749,1999,2249,2499,100000)
+   tem1 <- switch_km(tem1)
+   allData2$group = cut(allData2$DISTANCE,tem1)
+   n_arrival <- group_by(allData2,group)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport) %>% summarise(Count=n())
+   n_depart <- group_by(allData2,group)  %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(Count=n())
+   n_arrival$type = "Departure"
+   n_depart$type ="Arrival"
+   data1 <- merge(n_arrival,n_depart,all=TRUE)
+   data1 <- data1[complete.cases(data1), ]
+   data1 <- as.data.frame(data1)
+   allData2$DISTANCE <- tem
+   ggplot(data1, aes(x=group,y = Count , fill=type)) + 
+     geom_bar(stat = "identity", position = "dodge") +
+     labs(x="Distance Group", y = "Number of Flights") +
+     scale_fill_manual(values=colorsAD) +
+     geom_text(aes(label=Count), vjust=-0.3,
+               position = position_dodge(0.9), size=3.5)
+ }
+   
+ )
+  
+  output$numDistance <- renderPlot({
+    #justOneMonthReactive <- arrivalsDeparturesAirlinesMonth()
+    tem <- allData2$DISTANCE
+    allData2$DISTANCE <- switch_km(allData2$DISTANCE)
+    n_arrival <- group_by(allData2,DISTANCE)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport) %>% summarise(Count=n())
+    n_depart <- group_by(allData2,DISTANCE)  %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(Count=n())
+    n_arrival$type = "Departure"
+    n_depart$type ="Arrival"
+    data1 <- merge(n_arrival,n_depart,all=TRUE)
+    data1 <- data1[complete.cases(data1), ]
+    data1 <- as.data.frame(data1)
+    
+    allData2$DISTANCE <- tem
+    tt <- data1[data1$DISTANCE == input$distance, ]
+    ggplot(data1, aes(x=DISTANCE,y = Count , color=type)) + 
+      geom_point()+geom_text_repel(data=tt,aes(label=Count,color = type),fontface = 'bold', 
+                                   box.padding = 0.35, point.padding = 0.5,
+                                   segment.color = 'grey50')
+  }
+    
+  )
+  
+  output$numFlightTime <- renderPlot({
+    #justOneMonthReactive <- arrivalsDeparturesAirlinesMonth()
+    
+    n_arrival <- group_by(allData2,ACTUAL_ELAPSED_TIME)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport) %>% summarise(Count=n())
+    n_depart <- group_by(allData2,ACTUAL_ELAPSED_TIME)  %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(Count=n())
+    n_arrival$type = "Departure"
+    n_depart$type ="Arrival"
+    data1 <- merge(n_arrival,n_depart,all=TRUE)
+    #data1[is.na(data1)] <- 0
+    data1 <- as.data.frame(data1)
+    data1 <- data1[complete.cases(data1), ]
+    ggplot(data1, aes(x=ACTUAL_ELAPSED_TIME,y=Count , color=type)) + 
+      geom_point()+geom_line(aes(color=type))+scale_x_continuous(name="Flight Time(minutes)")+
+      scale_y_continuous(name="The number of Flights")
+  }
+  
+  )
   # Table: Departure and Arrival Totals by Airline
   output$tab1 <-DT::renderDataTable(
     DT::datatable({
