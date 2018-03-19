@@ -97,25 +97,25 @@ ui <-
   
   dashboardPage( 
     
-    dashboardHeader(title = "Learning to Fly"),
+    dashboardHeader(title = "Learning to Fly",
+                    titleWidth=500
+                    ),
     
     dashboardSidebar(
-      
+      width= 500,
       sidebarMenu(
         menuItem("About", tabName="about"),
         menuItem("Arrivals & Departures", tabName="arrivals_departures"),
         menuItem("Arrivals & Departures: Airlines", tabName="arrivals_departures_airlines"),
         menuItem("Delays", tabName="delays"),
         menuItem("Top Airports", tabName="top_airports"),
-        menuItem("Map", tabName="map"),
+        menuItem("Top Airlines", tabName="airline"),
         menuItem("Explore Date", tabName="date"),
         menuItem("Explore Weekday", tabName="day"),
-        menuItem("Airline", tabName="airline"),
-        menuItem("Settings", tabName="dashboard"),
-        menuItem("Top Airlines", tabName="top_airlines"),
-        menuItem("10 Interesting Days", tabName="interesting_days"),
-        menuItem("Graduate Section", tabName="graduate_section")
-        
+        menuItem("Travel To & From Illinois", tabName="map"),
+        menuItem("10 Interesting Travel Days", tabName="interesting_days"),
+        menuItem("Graduate Section", tabName="graduate_section"),
+        menuItem("Settings", tabName="dashboard")
       )
       
     ),
@@ -206,118 +206,143 @@ ui <-
         ),
         
         tabItem("arrivals_departures_airlines",              
-                
                 fluidRow(
-                  box(
-                    selectInput("arrivals_departures_airlines_month", "Select the month to visualize", choices=months, selected = 8)
-                  ),
-                  box(
-                    selectInput("arrivals_departures_airlines_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW')
-                  ),
-                  
-                  textOutput("arrivals_departures_airlines_result")
-                  
-                ), 
-                fluidRow(
-                  
-                  box(title = "Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 6,
+                  tabBox(
+                    tabPanel("Month Comparison",
+                      fluidRow(
+                        box(
+                          selectInput("arrivals_departures_airlines_month", "Select the month to visualize", choices=months, selected = 8)
+                        ),
+                        box(
+                          selectInput("arrivals_departures_airlines_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW')
+                        ),
+                        
+                        textOutput("arrivals_departures_airlines_result")
+                        
+                      ), 
+                      fluidRow(
+                        
+                        box(title = "Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 6,
+                            
+                            dataTableOutput("tab1")
+                            
+                        ),
+                        box( title = "Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 6,
+                             plotOutput("TotalDepAri")
+                        )
+                        
+                      )
+                    ),
+                  tabPanel( "Month to Month Comparison",
+                    fluidRow(
                       
-                      dataTableOutput("tab1")
+                      box( title = "Arrivals in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                           plotOutput("HeatArrMonORD")
+                      ),
                       
-                  ),
-                  box( title = "Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 6,
-                       plotOutput("TotalDepAri")
-                  )
-                  
-                ),
-                fluidRow(
-                  
-                  box( title = "Arrivals in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                       plotOutput("HeatArrMonORD")
-                  ),
-                  
-                  box( title = "Departures in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                       plotOutput("HeatDepMonORD")
-                  )
-                  
-                ),
-                fluidRow(
-                  
-                  box( title = "Arrivals in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                       plotOutput("HeatArrMonMDW")
-                  ),
-                  
-                  box( title = "Departures in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                       plotOutput("HeatDepMonMDW")
-                  )
-                  
-                )
+                      box( title = "Departures in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                           plotOutput("HeatDepMonORD")
+                      )
+                      
+                    ),
+                    fluidRow(
+                      
+                      box( title = "Arrivals in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                           plotOutput("HeatArrMonMDW")
+                      ),
+                      
+                      box( title = "Departures in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                           plotOutput("HeatDepMonMDW")
+                      )
+                    )
+                  ), # end tab panel
+                width=12) #end tab box
+              ) # end fluid row
         ),
-        tabItem("delays",
+        tabItem("delays",                
                 fluidRow(
-                  box(
-                    selectInput("delays_month", "Select the month to visualize", choices=months, selected = 4), width=4
-                  ),
-                  box(
-                    selectInput("delays_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
-                  )
-                ),
-                fluidRow (
-                  box(title = "Delays Per Hour", solidHeader = TRUE, status = "primary",width = 4,
-                      dataTableOutput("tab4")),
-                  
-                  box( title = "Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 8,
-                       plotOutput("BarDelaybyHour")
-                  )
-                ),
-                fluidRow (
-                  box(title = "Delays Change By month Midway", solidHeader = TRUE, status = "primary",width = 6,
-                      plotOutput("NumAndTypeOfDelayChangeMDW")),
-                  box(title = "Delays Change By month O'Hare", solidHeader = TRUE, status = "primary",width = 6,
-                      plotOutput("NumAndTypeOfDelayChangeORD"))
-                ),
+                    tabBox(
+                      tabPanel("Month Comparison",
+                          fluidRow(
+                            box(
+                              selectInput("delays_month", "Select the month to visualize", choices=months, selected = 4), width=4
+                            ),
+                            box(
+                              selectInput("delays_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
+                            )
+                          ),
+                          fluidRow (
+                            box(title = "Delays Per Hour", solidHeader = TRUE, status = "primary",width = 4,
+                                dataTableOutput("tab4")),
+                            
+                            box( title = "Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 8,
+                                 plotOutput("BarDelaybyHour")
+                            )
+                          )
+                      ),
+                      tabPanel("Month-To-Month Comparison",
+                          fluidRow (
+                            box(title = "Delays Change By month Midway", solidHeader = TRUE, status = "primary",width = 6,
+                                plotOutput("NumAndTypeOfDelayChangeMDW")),
+                            box(title = "Delays Change By month O'Hare", solidHeader = TRUE, status = "primary",width = 6,
+                                plotOutput("NumAndTypeOfDelayChangeORD"))
+                          )
+                      ),
+                      tabPanel("Delay Type Comparison",
+                          fluidRow(
+                            box(selectInput("delay_type", "Select delay type", choices=delays_type, selected = NULL), width=8),
+                            box(title = "Delay Type Change By month", solidHeader = TRUE, status = "primary",width = 6,
+                                plotOutput("delay_type_month")),
+                            box(title = "Delay Type Change By hour", solidHeader = TRUE, status = "primary",width = 10, plotOutput("delay_type_hour")
+                                )
+                            
+                          )
+                      ), 
+                    width=12) #end tab box
+                ) # end fluid row
+        ), #end tab item
+        tabItem("top_airports",                
                 fluidRow(
-                  box(selectInput("delay_type", "Select delay type", choices=delays_type, selected = NULL), width=8),
-                  box(title = "Delay Type Change By month", solidHeader = TRUE, status = "primary",width = 6,
-                      plotOutput("delay_type_month")),
-                  box(title = "Delay Type Change By hour", solidHeader = TRUE, status = "primary",width = 10, plotOutput("delay_type_hour"))
-                  
-                )
-        ),
-        tabItem("top_airports",
-                fluidRow(
-                  box(
-                    selectInput("top_airports_month", "Select the month to visualize", choices=months, selected = 4), width=4
-                  ),
-                  box(
-                    selectInput("top_airports_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
-                  )
-                ),
-                fluidRow( 
-                  box(title = "15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 4,
-                      dataTableOutput("tab5")),
-                  box( title = "15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
-                       plotOutput("BarTop10")
-                  )
-                ),
-                fluidRow(
-                  box(title = "top 15 airports by month O'Hare", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("Top15DestAirportsOrd")),
-                  box(title = "top 15 airports by month Midway", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("Top15DestAirportsMdw"))
-                  
-                ),
-                fluidRow(
-                  #box(selectInput("top50_airport","Pick a airport",choices = top50, selected = '',width = 4)),
-                  box(title = "Top 50 airports", solidHeader = TRUE, status = "primary", width = 6,
-                      uiOutput("top50Controls") ),
-                  box(title = "top 50 airports by hour", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("Top50Airport_hour")),
-                  box(title = "top 50 airports by month", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("Top50Airports_month"))
-                  
-                  
-                )
+                    tabBox(
+                      tabPanel("Month Comparison",
+                          fluidRow(
+                            box(
+                              selectInput("top_airports_month", "Select the month to visualize", choices=months, selected = 4), width=4
+                            ),
+                            box(
+                              selectInput("top_airports_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
+                            )
+                          ),
+                          fluidRow( 
+                            box(title = "15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 4,
+                                dataTableOutput("tab5")),
+                            box( title = "15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
+                                 plotOutput("BarTop10")
+                            )
+                          )
+                      ),
+                      tabPanel("Month-To-Month Comparison",
+                            fluidRow(
+                              box(title = "top 15 airports by month O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                                  plotOutput("Top15DestAirportsOrd")),
+                              box(title = "top 15 airports by month Midway", solidHeader = TRUE, status = "primary", width = 6,
+                                  plotOutput("Top15DestAirportsMdw"))
+                              
+                            )
+                      ),
+                      tabPanel("Airport Comparison",
+                          fluidRow(
+                            #box(selectInput("top50_airport","Pick a airport",choices = top50, selected = '',width = 4)),
+                            box(title = "Top 50 airports", solidHeader = TRUE, status = "primary", width = 6,
+                                uiOutput("top50Controls") ),
+                            box(title = "top 50 airports by hour", solidHeader = TRUE, status = "primary", width = 6,
+                                plotOutput("Top50Airport_hour")),
+                            box(title = "top 50 airports by month", solidHeader = TRUE, status = "primary", width = 6,
+                                plotOutput("Top50Airports_month"))
+                          )
+                    ), # end tab panel
+            width = 12) #end tab box
+          ) # end fluid row
         ),
         tabItem("map",
                 box(title = "Percentage of Arrivals from Illinois", solidHeader = TRUE, status = "primary", width = 6,
@@ -424,7 +449,6 @@ ui <-
         ),
         tabItem("graduate_section",
                 fluidRow(
-                  
                   box(title = "Distance:", solidHeader = TRUE, status = "primary", width = 4,
                       uiOutput("distance") ),
                   box(title = "The number of Arrivals and Departures to and from different distances", solidHeader = TRUE, status = "primary", width = 8,plotOutput("numDistance")),

@@ -5,7 +5,17 @@
 
 .main-header .logo {
     font-weight: bold;
-    font-size: 24px;
+    font-size: 48px;
+    height: 100px;
+    padding-top: 25px;
+}
+
+.sidebar {
+  padding-top: 50px;
+}
+
+.sidebar-menu{
+  font-size: 48px;
 }
 
 .box.box-solid.box-primary {
