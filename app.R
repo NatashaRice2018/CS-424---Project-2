@@ -178,20 +178,18 @@ ui <-
                               )
                             ),
                             fluidRow(
-                              box(title = "O'Hare Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 3,
-                                  dataTableOutput("tab3_ohare")
-                              ),
-                              box( title = "O'Hare Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 9,
-                                   plotOutput("BarByWeekdayOhare")
-                              )
-                            ),
-                            fluidRow(
-                              box(title = "Midway Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 3,
-                                  dataTableOutput("tab3_mdw")
-                              ),
-                              box( title = "Midway Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 9,
-                                   plotOutput("BarByWeekdayMDW")
-                              )
+                                box(title = "O'Hare Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 2,
+                                    dataTableOutput("tab3_ohare")
+                                ),
+                                box(title = "Midway Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 2,
+                                    dataTableOutput("tab3_mdw")
+                                ),
+                                box( title = "O'Hare Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 4,
+                                     plotOutput("BarByWeekdayOhare")
+                                ),
+                                box( title = "Midway Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 4,
+                                     plotOutput("BarByWeekdayMDW")
+                                )
                             )
                     ),
                     tabPanel("Month-To-Month Comparison",
@@ -780,7 +778,7 @@ server <- function(input, output) {
       geom_text(aes(label=Count), vjust=-0.3,
                 position = position_dodge(0.9), size=3.5)
     
-  }) #### Midway Charts
+  }) 
   
   
   ########### Arrivals and Departures Tab
@@ -794,8 +792,8 @@ server <- function(input, output) {
         #dep_hour$type = "Departure"
         arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
         #arr_hour$type = "Arrival"
-        colnames(dep_hour)<-c("hour","number_dep")
-        colnames(arr_hour)<-c("hour","number_arr")
+        colnames(dep_hour)<-c("hour","Departures")
+        colnames(arr_hour)<-c("hour","Arrivals")
         data2 <- merge(dep_hour,arr_hour,all=TRUE)
         data2 <- subset(data2,!is.na(data2$hour))
         data2$hour<-switch_hour(data2$hour)
@@ -806,7 +804,7 @@ server <- function(input, output) {
         data2
         
       },
-      options = list(pageLength = 8)
+      options = list(pageLength = 12)
       )
       
     )
@@ -846,7 +844,8 @@ server <- function(input, output) {
         
         dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN=="ORD") %>% summarise(number_dep=n())
         arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(number_arrival=n())
-        colnames(dep_weekday)<-c("weekday","number_dep")
+        colnames(dep_weekday)<-c("weekday","Departures")
+        colnames(arr_weekday)<-c("weekday","Arrivals")
         data3 <- merge(dep_weekday,arr_weekday,all=TRUE)
         data3 <- subset(data3,!is.na(data3$weekday))
         data3[is.na(data3)] <- 0
@@ -856,7 +855,7 @@ server <- function(input, output) {
         data3
         
       },
-      options = list(pageLength = 8, order = list(list(1, 'asc')))
+      options = list(pageLength = 12, order = list(list(1, 'asc')))
       )
       
     )
@@ -895,8 +894,8 @@ server <- function(input, output) {
         #dep_hour$type = "Departure"
         arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
         #arr_hour$type = "Arrival"
-        colnames(dep_hour)<-c("hour","number_dep")
-        colnames(arr_hour)<-c("hour","number_arr")
+        colnames(dep_hour)<-c("hour","Departures")
+        colnames(arr_hour)<-c("hour","Arrivals")
         data2 <- merge(dep_hour,arr_hour,all=TRUE)
         data2 <- subset(data2,!is.na(data2$hour))
         data2$hour<-switch_hour(data2$hour)
@@ -907,7 +906,7 @@ server <- function(input, output) {
         data2
         
       },
-      options = list(pageLength = 8)
+      options = list(pageLength = 12)
       )
       
     )
@@ -947,7 +946,8 @@ server <- function(input, output) {
         
         dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN=="MDW") %>% summarise(number_dep=n())
         arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(number_arrival=n())
-        colnames(dep_weekday)<-c("weekday","number_dep")
+        colnames(dep_weekday)<-c("weekday","Departures")
+        colnames(arr_weekday)<-c("weekday","Arrivals")
         data3 <- merge(dep_weekday,arr_weekday,all=TRUE)
         data3 <- subset(data3,!is.na(data3$weekday))
         data3[is.na(data3)] <- 0
