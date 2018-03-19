@@ -117,10 +117,8 @@ ui <-
         menuItem("Arrivals & Departures", tabName="arrivals_departures"),
         menuItem("Arrivals & Departures: Airlines", tabName="arrivals_departures_airlines"),
         menuItem("Delays", tabName="delays"),
-        menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),        
         menuItem("Top Airports", tabName="top_airports"),
         menuItem("Top Airlines", tabName="airline"),
-        menuItem("Top Airlines Yang", tabName="top_airlines"),        
         menuItem("Explore Date", tabName="date"),
         menuItem("Explore Weekday", tabName="day"),
         menuItem("Travel To & From Illinois", tabName="map"),
@@ -243,26 +241,23 @@ ui <-
                         
                       ), 
                       fluidRow(
-                        box( title = "O'Hare Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 8,
-                             plotOutput("TotalDepAriORD")
-                        ),
-                        box(title = "O'Hare Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 4,
+                        box(title = "O'Hare Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 3,
                             
                             dataTableOutput("tab1_ord")
                             
+                        ),
+                        box( title = "O'Hare Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 9,
+                             plotOutput("TotalDepAriORD")
                         )
                       ),
                       fluidRow(
                         
-                        box( title = "Midway Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 4,
-                             plotOutput("TotalDepAriMDW")
-                        ),
-                        box(title = "Midway Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 8,
-                            
+                        box(title = "Midway Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 3,
                             dataTableOutput("tab1_mdw")
-                            
+                        ),
+                        box( title = "Midway Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 9,
+                             plotOutput("TotalDepAriMDW")
                         )
-                        
                       )
                     ),
                   tabPanel( "Month to Month Comparison",
@@ -409,36 +404,21 @@ ui <-
         
         tabItem("interesting_days",
                 
-                
-                
                 fluidRow(
-                  
                   box(
-                    
                     selectInput("top_airports_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
-                    
-                  )
-                ),
-                  
-                fluidRow(
-                  
+                  ),
                   box(
                     selectInput("day_airport", "Selected Airport:", choices=loc), width=4
-                  ),
+                  )
+                ),
+                fluidRow(
+                  
                   box(title = "Flight/Delay", solidHeader = TRUE, status = "primary",width = 8,
                       
                       dataTableOutput("interesting_day"))
                 ),
                 
-                
-                fluidRow(
-                  
-                  box(title = "10 Bussiest Days/Holidays ", solidHeader = TRUE, status = "primary",width = 4,
-                      
-                      dataTableOutput("interestingDays"))
-                  
-                  
-                ), 
                 fluidRow(
                   
                   box(title = "Heatmap week", solidHeader = TRUE, status = "primary",width = 12,
@@ -456,23 +436,22 @@ ui <-
                     selectInput("Airline", "Airline", choices=airlines), width=4
                   )
                 ),
-                
                 fluidRow(
-                  box(title = "Arrivals for selected Airport by month at Midway", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("AirlineArrivalsMonthMDW")),
-                  
-                  box(title = "Arrivals for selected Airport by month at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                  box(title = "Arrivals for selected Airport by month at O'Hare", solidHeader = TRUE, status = "primary", width = 5,
                       plotOutput("AirlineArrivalsMonthORD")
+                  ),
+                  box(title = "Arrivals for selected Airport by month at Midway", solidHeader = TRUE, status = "primary", width = 5,
+                      plotOutput("AirlineArrivalsMonthMDW")
                   )
                 ),
                 fluidRow(
-                  box(title = "Departures/Arrivals for selected Airport by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("AirlineDepartureHRMDW")
-                  )
-                ),
-                fluidRow(
-                  box(title = "Departures/Arrivals for selected Airport by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                  box(title = "Departures/Arrivals for selected Airport by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 7,
                       plotOutput("AirlineDepartureHrORD")
+                  )
+                ),
+                fluidRow(
+                  box(title = "Departures/Arrivals for selected Airport by hour at Midway", solidHeader = TRUE, status = "primary", width = 7,
+                      plotOutput("AirlineDepartureHRMDW")
                   )
                 )
         ),
