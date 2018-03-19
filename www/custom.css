@@ -1,4 +1,9 @@
 
+/*Font size of table titles*/
+.box-header .box-title{
+  font-size:32px;
+}
+
 .nav-tabs-custom {
   overflow: auto;
 }
@@ -18,8 +23,10 @@
   font-size: 48px;
 }
 
+/*Font size of tables*/
 .box.box-solid.box-primary {
   border: 1px solid black;
+  font-size: 28px;
 }
 
 .box.box-solid.box-primary > .box-header {
