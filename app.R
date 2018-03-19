@@ -123,8 +123,18 @@ ui <-
         menuItem("Explore Weekday", tabName="day"),
         menuItem("Travel To & From Illinois", tabName="map"),
         menuItem("10 Interesting Travel Days", tabName="interesting_days"),
-        menuItem("Graduate Section", tabName="graduate_section"),
-        menuItem("Settings", tabName="dashboard")
+        menuItem("Flight Distances", tabName="flight_distances"),
+        menuItem("Flight Facts", tabName="flight_facts"),
+        menuItem("Unit",
+          box(
+            selectInput("Unit","Miles or Kilometers", choices=c("Miles","Kilometers"), selected = 'Miles'), width=650
+          )
+        ),
+        menuItem("Time",
+           box(
+             selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour'), width=650
+           )
+        )
       )
       
     ),
@@ -134,23 +144,7 @@ ui <-
       tags$head(
         tags$link(rel="stylesheet", type="text/css", href="custom.css")
       ),
-      
       tabItems(
-        
-        tabItem("dashboard",
-                
-                fluidRow(
-                  box(
-                    selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour'), width=4
-                  ),
-                  box(
-                    selectInput("Unit", "Miles or Kilometers ", choices=c("Miles","Kilometers"), selected = 'Miles'), width=4
-                  )
-                  
-                )
-
-        ), #end of tab item
-        
         tabItem("about",
                 h1("Authors: Yang Hao, Guillermo Rojas Hernandez, Natasha Rice, Siddharth Basu"),
                 a("Link to project website", href="https://guillermokrh.github.io/CS-424---Project-2-Website/")
@@ -205,22 +199,32 @@ ui <-
                              fluidRow(
                                
                                box( title = "Arrivals in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                                    plotOutput("HeatArrHrORD")
+                                    plotOutput("HeatArrHrORD", height=800)
                                ),
                                box( title = "Departures in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                                    plotOutput("HeatDepHrORD")
+                                    plotOutput("HeatDepHrORD", height=800)
                                )
                                
                              ),
                              fluidRow(
                                
                                box( title = "Arrivals in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                                    plotOutput("HeatArrHrMdw")
+                                    plotOutput("HeatArrHrMdw", height=800)
                                ),
                                box( title = "Departures in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                                    plotOutput("HeatDepHrMdw")
+                                    plotOutput("HeatDepHrMdw", height=800)
                                )
                                
+                             )
+                    ),
+                    tabPanel("Additional Heatmaps",
+                             fluidRow(
+                               
+                               box(title = "Heatmap week", solidHeader = TRUE, status = "primary",width = 12,
+                                   
+                                   plotOutput("HeatArrHourMon", height=800)),
+                               box(title = "Heatmap hour", solidHeader = TRUE, status = "primary",width = 12,
+                                   plotOutput("HeatArrHourWeek"))
                              )
                     ),
                     width = 12
@@ -304,7 +308,7 @@ ui <-
                                 dataTableOutput("tab4_ord")),
                             
                             box( title = "O'Hare Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 8,
-                                 plotOutput("BarDelaybyHourORD")
+                                 plotOutput("BarDelaybyHourORD", height=800)
                             )
                           ),
                           fluidRow (
@@ -312,7 +316,7 @@ ui <-
                                 dataTableOutput("tab4_mdw")),
                             
                             box( title = "Midway Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 8,
-                                 plotOutput("BarDelaybyHourMDW")
+                                 plotOutput("BarDelaybyHourMDW", height=800)
                             )
                           )
                       ),
@@ -406,28 +410,13 @@ ui <-
                 
                 fluidRow(
                   box(
-                    selectInput("top_airports_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
-                  ),
-                  box(
-                    selectInput("day_airport", "Selected Airport:", choices=loc), width=4
+                    selectInput("day_airport", "Selected Airport:", choices=loc), width=6
                   )
                 ),
                 fluidRow(
-                  
-                  box(title = "Flight/Delay", solidHeader = TRUE, status = "primary",width = 8,
-                      
+                  box(title = "Flight/Delay", solidHeader = TRUE, status = "primary",width = 6,
                       dataTableOutput("interesting_day"))
-                ),
-                
-                fluidRow(
-                  
-                  box(title = "Heatmap week", solidHeader = TRUE, status = "primary",width = 12,
-                      
-                      plotOutput("HeatArrHourMon")),
-                  box(title = "Heatmap hour", solidHeader = TRUE, status = "primary",width = 12,
-                      plotOutput("HeatArrHourWeek"))
                 )
-                
         ),
         
         tabItem("airline",
@@ -462,18 +451,18 @@ ui <-
                 fluidRow(column(3, verbatimTextOutput("value"))),
                 fluidRow(
                   box(title = "Departures/Arrivals for selected Date by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("DateDepArrHrMDW")),
+                      plotOutput("DateDepArrHrMDW", height=800)),
                   
                   box(title = "Departures/Arrivals for selected date by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("DateDepArrHrORD")
+                      plotOutput("DateDepArrHrORD", height=800)
                   )
                 ),
                 fluidRow(
                   box(title = "Delays for selected Date by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("DateDelayMDW")),
+                      plotOutput("DateDelayMDW", height=800)),
                   
                   box(title = "Delays for selected date by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("DateDelayORD")
+                      plotOutput("DateDelayORD", height=800)
                   )
                 )
         ),
@@ -499,7 +488,7 @@ ui <-
                   )
                 )
         ),
-        tabItem("graduate_section",
+        tabItem("flight_distances",
                 fluidRow(
                   #ORD/MDW Choice
                   box(
@@ -513,26 +502,32 @@ ui <-
                 fluidRow(
                   box(title = "Flight Time:", solidHeader = TRUE, status = "primary", width = 8,
                       plotOutput("numFlightTime") )
-                ),
+                )
+         ),
+        tabItem("flight_facts",
                 fluidRow(
                   box(
                     selectInput("arrivals_departures_passenger_airport", "Select airport to visualize", choices=loc, selected = 'MDW')
-                  )),
+                  )
+                ),
                 fluidRow(
                   box(title = "Departures/Arrivals for selected airport by Month", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("passenger_month"))
                 ),
                 fluidRow(
                   box(title = "Select Airline to visualize", solidHeader = TRUE, status = "primary", width = 6,
-                      uiOutput("airlineControls") ),
+                      uiOutput("airlineControls") )
+                ),
+                fluidRow(
                  box(title = "Passengers for selected airline by Month", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("passenger_airline_month")) 
                 ),
                 fluidRow({
                   box(title = "Flights for selected airline by Month", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("flight_airline_month"))
-                })        
-                )
+                  }
+                )        
+        )
       ) # end of TabItems 
       
     ), # end of DashboardBody
@@ -1216,7 +1211,7 @@ server <- function(input, output) {
       
       data4
     },
-    options = list(pageLength = 24))
+    options = list(pageLength = 12))
   )
   
   # Bar Chart: Delays for Each Hour
@@ -1247,7 +1242,7 @@ server <- function(input, output) {
       labs(x="Time", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 1500))
   })
   
   #### Midway Charts
@@ -1271,7 +1266,7 @@ server <- function(input, output) {
       
       data4
     },
-    options = list(pageLength = 24))
+    options = list(pageLength = 12))
   )
   
   # Bar Chart: Delays for Each Hour
@@ -1302,7 +1297,7 @@ server <- function(input, output) {
       labs(x="Time", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 1500))
   })
   
   # select delay type 
@@ -1521,37 +1516,79 @@ server <- function(input, output) {
   ### heatmap of set###
   output$HeatArrHourMon <- renderPlot(
     {
-      OhrArr <- subset(allData2, DEST== "ORD")
+      OhrArr <- subset(allData2, DEST== input$day_airport)
       OhrArr2 <- group_by(OhrArr,hour, month(OhrArr$ARR_TIME_new) ) %>% select(DEST,hour, ARR_TIME_new )  %>% summarise(count=n())
+      OhrArr2[is.na(OhrArr2)] <- 0
       OhrArr2$hour<-switch_hour(OhrArr2$hour)
+      OhrArr2$hour <- set_time_factor(OhrArr2$hour)
+      
       colnames(OhrArr2)<-c("Hour","Month", "Count")
       OhrArr2$scale <- scale(OhrArr2$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
       OhrArr2$Month <- month.abb[OhrArr2$Month]
       OhrArr2$Month <- factor(OhrArr2$Month, levels = month.abb)
       
-      OhrArr2_delay <- group_by(OhrArr,hour, month(OhrArr$ARR_TIME_new) ) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST=="ORD" ) %>% summarise(arrival_delays=n())
+      OhrArr2_delay <- group_by(OhrArr,hour, month(OhrArr$ARR_TIME_new) ) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST==input$day_airport ) %>% summarise(arrival_delays=n())
+      OhrArr2_delay[is.na(OhrArr2_delay)] <- 0
       OhrArr2_delay$hour<-switch_hour(OhrArr2_delay$hour)
-      colnames(OhrArr2_delay)<-c("Hour","Month", "Count")
+      OhrArr2_delay$hour <- set_time_factor(OhrArr2_delay$hour)
+      
+      colnames(OhrArr2_delay)<-c('Hour','Month', 'Count')
       OhrArr2_delay$scale <- scale(OhrArr2_delay$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
       OhrArr2_delay$Month <- month.abb[OhrArr2_delay$Month]
       OhrArr2_delay$Month <- factor(OhrArr2_delay$Month, levels = month.abb)
       
       p1<-ggplot(OhrArr2, aes(x=Hour, y=Month )) +
-        geom_tile(aes(fill = Count), colour = "white") + 
+        geom_tile(aes(fill = Count), colour = 'white') +
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
-        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = "black", size = 4)
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = 'black', size = 4)
       #scale_y_continuous(breaks=c(3,6,9,12))
       
       p2<-ggplot(OhrArr2_delay, aes(x=Hour, y=Month )) +
-        geom_tile(aes(fill = Count), colour = "white") + 
+        geom_tile(aes(fill = Count), colour = 'white') +
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = 'black', size = 4)
+      #scale_y_continuous(breaks=c(3,6,9,12))
+      
+      OhrArr <- subset(allData2, ORIGIN== input$day_airport)
+      OhrArr2 <- group_by(OhrArr,hour_dep, month(OhrArr$ARR_TIME_new) ) %>% select(DEST,hour, ARR_TIME_new )  %>% summarise(count=n())
+      OhrArr2[is.na(OhrArr2)] <- 0
+      OhrArr2$hour_dep<-switch_hour(OhrArr2$hour_dep)
+      OhrArr2$hour_dep <- set_time_factor(OhrArr2$hour_dep)
+      
+      colnames(OhrArr2)<-c('Hour','Month', 'Count')
+      OhrArr2$scale <- scale(OhrArr2$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
+      OhrArr2$Month <- month.abb[OhrArr2$Month]
+      OhrArr2$Month <- factor(OhrArr2$Month, levels = month.abb)
+      
+      OhrArr2_delay <- group_by(OhrArr,hour_dep, month(OhrArr$ARR_TIME_new) ) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(DEP_DELAY<0 & ORIGIN==input$day_airport ) %>% summarise(arrival_delays=n())
+      OhrArr2_delay[is.na(OhrArr2_delay)] <- 0
+      OhrArr2_delay$hour_dep<-switch_hour(OhrArr2_delay$hour_dep)
+      OhrArr2_delay$hour_dep <- set_time_factor(OhrArr2_delay$hour_dep)
+      
+      colnames(OhrArr2_delay)<-c("Hour","Month", "Count")
+      OhrArr2_delay$scale <- scale(OhrArr2_delay$Count, center = FALSE, scale = max(OhrArr2_delay$Count, na.rm = TRUE))
+      OhrArr2_delay$Month <- month.abb[OhrArr2_delay$Month]
+      OhrArr2_delay$Month <- factor(OhrArr2_delay$Month, levels = month.abb)
+      
+      p3<-ggplot(OhrArr2, aes(x=Hour, y=Month )) +
+        geom_tile(aes(fill = Count), colour = "white") +
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
         theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = "black", size = 4)
       #scale_y_continuous(breaks=c(3,6,9,12))
       
-      grid.arrange(arrangeGrob(arrangeGrob(p1,p2),ncol=2,widths=c(5/6,1/6)))
+      p4<-ggplot(OhrArr2_delay, aes(x=Hour, y=Month )) +
+        geom_tile(aes(fill = Count), colour = "white") +
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = "black", size = 4)
+      #scale_y_continuous(breaks=c(3,6,9,12))
+      
+      grid.arrange(arrangeGrob(arrangeGrob(p1,p2,p3,p4),ncol=1))
       
     }
   )
+  
+
+  
   output$HeatArrHourWeek <- renderPlot(
     {
       OhrArr <- subset(allData2, DEST== "ORD")
