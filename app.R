@@ -149,55 +149,60 @@ ui <-
         
         tabItem("arrivals_departures",
                 fluidRow(
-                  box(
-                    selectInput("arrivals_departures_month", "Select the month to visualize", choices=months, selected = 8), width=3
-                  ),
-                  box(
-                    selectInput("arrivals_departures_airport","Select airport:",choices=loc,selected='MDW'), width=9
-                  ),
-                  
-                  textOutput("arrivals_departures_result")
-                ),
-                fluidRow(
-                  box(title = "Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 3,
-                      
-                      dataTableOutput("tab2")
-                      
-                  ),
-                  box( title = "Total number of departures/arrivals by time", solidHeader = TRUE, status = "primary", width = 9,
-                       plotOutput("BarByTime")
+                  tabBox(
+                    tabPanel("Month Comparison",
+                            fluidRow(
+                                  box(
+                                    selectInput("arrivals_departures_month", "Select the month to visualize", choices=months, selected = 8), width=6
+                                  ),
+                                  box(
+                                    selectInput("arrivals_departures_airport","Select airport:",choices=loc,selected='MDW'), width=6
+                                  )
+                            ),
+                            fluidRow(
+                                  box(title = "Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 3,
+                                   
+                                      dataTableOutput("tab2")
+                                   
+                                  ),
+                                  box( title = "Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 9,
+                                       plotOutput("BarByTime")
+                                  )
+                            ),
+                            fluidRow(
+                              box(title = "Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 3,
+                                  dataTableOutput("tab3")
+                              ),
+                              box( title = "Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 9,
+                                   plotOutput("BarByWeekday")
+                              )
+                            )
+                    ),
+                    tabPanel("Month-To-Month Comparison",
+                             fluidRow(
+                               
+                               box( title = "Arrivals in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                                    plotOutput("HeatArrHrORD")
+                               ),
+                               box( title = "Departures in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                                    plotOutput("HeatDepHrORD")
+                               )
+                               
+                             ),
+                             fluidRow(
+                               
+                               box( title = "Arrivals in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                                    plotOutput("HeatArrHrMdw")
+                               ),
+                               box( title = "Departures in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                                    plotOutput("HeatDepHrMdw")
+                               )
+                               
+                             )
+                    ),
+                    width = 12
                   )
-                ),
-                fluidRow(
-                  box(title = "Arrivals and Departures by Weekday", solidHeader = TRUE, status = "primary", width = 3,
-                      dataTableOutput("tab3")
-                  ),
-                  box( title = "Total number of departures/arrivals by Day of Week", solidHeader = TRUE, status = "primary", width = 9,
-                       plotOutput("BarByWeekday")
-                  )
-                ),
-                fluidRow(
-                  
-                  box( title = "Arrivals in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                       plotOutput("HeatArrHrORD")
-                  ),
-                  box( title = "Departures in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                       plotOutput("HeatDepHrORD")
-                  )
-                  
-                ),
-                fluidRow(
-                  
-                  box( title = "Arrivals in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                       plotOutput("HeatArrHrMdw")
-                  ),
-                  box( title = "Departures in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                       plotOutput("HeatDepHrMdw")
-                  )
-                  
                 )
-
-                
         ),
         
         tabItem("arrivals_departures_airlines",              
