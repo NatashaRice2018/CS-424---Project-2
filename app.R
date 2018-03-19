@@ -106,15 +106,15 @@ ui <-
         menuItem("Arrivals & Departures", tabName="arrivals_departures"),
         menuItem("Arrivals & Departures: Airlines", tabName="arrivals_departures_airlines"),
         menuItem("Delays", tabName="delays"),
-        menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),
         menuItem("Top Airports", tabName="top_airports"),
         menuItem("Map", tabName="map"),
-        menuItem("Date", tabName="date"),
-        menuItem("Day", tabName="day"),
+        menuItem("Explore Date", tabName="date"),
+        menuItem("Explore Weekday", tabName="day"),
         menuItem("Airline", tabName="airline"),
         menuItem("Settings", tabName="dashboard"),
         menuItem("Top Airlines", tabName="top_airlines"),
-        menuItem("10 Interesting Days", tabName="interesting_days")
+        menuItem("10 Interesting Days", tabName="interesting_days"),
+        menuItem("Graduate Section", tabName="graduate_section")
         
       )
       
@@ -195,18 +195,8 @@ ui <-
                        plotOutput("HeatDepHrMdw")
                   )
                   
-                ),
-                fluidRow(
-                  
-                  box(title = "Distance:", solidHeader = TRUE, status = "primary", width = 4,
-                      uiOutput("distance") ),
-                  box(title = "The number of Arrivals and Departures to and from different distances", solidHeader = TRUE, status = "primary", width = 8,plotOutput("numDistance")),
-                  box(title = "The number of Flight over Distance Group",solidHeader = TRUE, status = "primary",width = 8,plotOutput("numDistance_bar"))
-                ),
-                fluidRow(
-                  box(title = "Flight Time:", solidHeader = TRUE, status = "primary", width = 8,
-                      plotOutput("numFlightTime") )
                 )
+
                 
         ),
         
@@ -288,7 +278,6 @@ ui <-
                   box(title = "Delay Type Change By hour", solidHeader = TRUE, status = "primary",width = 10, plotOutput("delay_type_hour"))
                   
                 )
-                
         ),
         tabItem("top_airports",
                 fluidRow(
@@ -350,7 +339,7 @@ ui <-
                 
                 fluidRow(
                   
-                  box(title = "10 Bussiest Days/Holidays ", solidHeader = TRUE, status = "primary",width = 4,
+                  box(title = "10 Busiest Days/Holidays ", solidHeader = TRUE, status = "primary",width = 4,
                       
                       dataTableOutput("interestingDays"))
                   
@@ -426,6 +415,19 @@ ui <-
                   box(title = "Delays for selected date by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("DayDelayORD")
                   )
+                )
+        ),
+        tabItem("graduate_section",
+                fluidRow(
+                  
+                  box(title = "Distance:", solidHeader = TRUE, status = "primary", width = 4,
+                      uiOutput("distance") ),
+                  box(title = "The number of Arrivals and Departures to and from different distances", solidHeader = TRUE, status = "primary", width = 8,plotOutput("numDistance")),
+                  box(title = "The number of Flight over Distance Group",solidHeader = TRUE, status = "primary",width = 8,plotOutput("numDistance_bar"))
+                ),
+                fluidRow(
+                  box(title = "Flight Time:", solidHeader = TRUE, status = "primary", width = 8,
+                      plotOutput("numFlightTime") )
                 )
         )
       ) # end of TabItems 
