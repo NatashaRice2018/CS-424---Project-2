@@ -24,6 +24,8 @@ library(ggridges)
 #libaries for the map
 library(ggrepel)
 
+library(gridExtra)
+
 
 # assume all of the tsv files in this directory are data of the same kind that I want to visualize
 
@@ -59,6 +61,13 @@ allData2$weekday <- weekdays( allData2$ARR_TIME_new)
 allData2$hour_dep <- hour(allData2$DEP_TIME_new)
 #allData2$hour_dep <-paste(allData2$hour_dep,":00",sep = "")
 allData2$weekday_dep <- weekdays(allData2$DEP_TIME_new)
+
+# passenger dataset
+passenger_raw <- read.csv("passenger.csv")
+passenger <- passenger_raw
+passenger <- passenger[passenger$ORIGIN %in% c("MDW","ORD") | passenger$DEST %in% c("MDW","ORD"),]
+passenger <- passenger[passenger$PASSENGERS !=0,]
+
 
 percent <- function(x, digits = 2, format = "f", ...) {
   paste0(formatC(100 * x, format = format, digits = digits, ...), "%")
@@ -108,8 +117,10 @@ ui <-
         menuItem("Arrivals & Departures", tabName="arrivals_departures"),
         menuItem("Arrivals & Departures: Airlines", tabName="arrivals_departures_airlines"),
         menuItem("Delays", tabName="delays"),
+        menuItem("Delays: Date/Week Specific", tabName="delays_date_week"),        
         menuItem("Top Airports", tabName="top_airports"),
         menuItem("Top Airlines", tabName="airline"),
+        menuItem("Top Airlines Yang", tabName="top_airlines"),        
         menuItem("Explore Date", tabName="date"),
         menuItem("Explore Weekday", tabName="day"),
         menuItem("Travel To & From Illinois", tabName="map"),
@@ -139,7 +150,7 @@ ui <-
                   )
                   
                 )
-                
+
         ), #end of tab item
         
         tabItem("about",
@@ -406,19 +417,36 @@ ui <-
                     
                     selectInput("top_airports_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
                     
-                  )),
-                
+                  )
+                ),
+                  
+                fluidRow(
+                  
+                  box(
+                    selectInput("day_airport", "Selected Airport:", choices=loc), width=4
+                  ),
+                  box(title = "Flight/Delay", solidHeader = TRUE, status = "primary",width = 8,
+                      
+                      dataTableOutput("interesting_day"))
+                ),
                 
                 
                 fluidRow(
                   
-                  box(title = "Top 10 Interesting Days ", solidHeader = TRUE, status = "primary",width = 4,
+                  box(title = "10 Bussiest Days/Holidays ", solidHeader = TRUE, status = "primary",width = 4,
                       
                       dataTableOutput("interestingDays"))
                   
                   
+                ), 
+                fluidRow(
                   
-                ) 
+                  box(title = "Heatmap week", solidHeader = TRUE, status = "primary",width = 12,
+                      
+                      plotOutput("HeatArrHourMon")),
+                  box(title = "Heatmap hour", solidHeader = TRUE, status = "primary",width = 12,
+                      plotOutput("HeatArrHourWeek"))
+                )
                 
         ),
         
@@ -506,8 +534,26 @@ ui <-
                 fluidRow(
                   box(title = "Flight Time:", solidHeader = TRUE, status = "primary", width = 8,
                       plotOutput("numFlightTime") )
+                ),
+                fluidRow(
+                  box(
+                    selectInput("arrivals_departures_passenger_airport", "Select airport to visualize", choices=loc, selected = 'MDW')
+                  )),
+                fluidRow(
+                  box(title = "Departures/Arrivals for selected airport by Month", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("passenger_month"))
+                ),
+                fluidRow(
+                  box(title = "Select Airline to visualize", solidHeader = TRUE, status = "primary", width = 6,
+                      uiOutput("airlineControls") ),
+                 box(title = "Passengers for selected airline by Month", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("passenger_airline_month")) 
+                ),
+                fluidRow({
+                  box(title = "Flights for selected airline by Month", solidHeader = TRUE, status = "primary", width = 6,
+                      plotOutput("flight_airline_month"))
+                })        
                 )
-        )
       ) # end of TabItems 
       
     ), # end of DashboardBody
@@ -518,7 +564,20 @@ ui <-
 
 server <- function(input, output) {
   
-  
+  day_interesting <- reactive({
+    switch(input$day_interesting,
+           "Severe Storm" = "2017-06-14",
+           "New Year's Day" = "2017-01-01",
+           "Thanksgiving" = "2017-11-23",
+           "Independence Day"="2017-07-04", 
+           "Labor Day"="2017-09-04", 
+           "Lollapalooza"="2017-08-03", 
+           "Veteran's Day"="2017-11-11", 
+           "Memorial Day"="2017-05-29", 
+           "Columbus Day"="2017-10-09", 
+           "Presidents' Day"="2017-02-20"
+    )
+  })
   
   # increase the default font size
   theme_set(theme_grey(base_size = 32)) 
@@ -541,6 +600,10 @@ server <- function(input, output) {
   delaysMonth <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$delays_month)})
   topAirportsMonth <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$top_airports_month)})
   topInterestingDays <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$top_interesting_days)})
+  
+  passenger_arrival <- reactive({subset(passenger,passenger$DEST==input$arrivals_departures_passenger_airport)})
+  passenger_depart <- reactive({subset(passenger,passenger$ORIGIN==input$arrivals_departures_passenger_airport)})
+  
   
   output$result <- renderText({
     paste("You chose month:", input$Month, "and airport:", input$Airport)
@@ -626,6 +689,147 @@ server <- function(input, output) {
     
     empty
   }
+  
+  #########Passenger######################
+  #selected Input for airport: arrivals_departures_passenger_airport
+  
+  output$passenger_month <- renderPlot({
+    
+    passenger_arrival <- passenger_arrival()
+    passenger_depart <- passenger_depart()
+    n_arrival <- aggregate(PASSENGERS ~ MONTH, data = passenger_arrival, sum)
+    n_depart <- aggregate(PASSENGERS ~ MONTH, data = passenger_depart, sum)
+    
+    n_arrival$type = "Departure"
+    n_depart$type ="Arrival"
+    data1 <- merge(n_arrival,n_depart,all=TRUE)
+    data1 <- data1[complete.cases(data1), ]
+    data1 <- as.data.frame(data1)
+    
+    data1$MONTH <- month.abb[data1$MONTH]
+    
+    ggplot(data1, aes(x=MONTH,y = PASSENGERS/1000000 , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") + ggtitle("Number of Passengers Flying by Month of Year")+labs(x="Month", y = "Passengers (in millions)") +
+      scale_fill_manual(values=colorsAD) + scale_x_discrete(limits = month.abb) +
+      geom_text(aes(label=PASSENGERS), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+    
+  })
+  
+  #################Interesting days##########################
+  
+  output$interesting_day <- DT::renderDataTable(
+    DT::datatable({ 
+      Occasion = c("New Year's Day","valentine's day","St Patrick's day","Memorial Day","Independence Day",   "Labor Day" , "Columbus Day", "Veteran's Day","Thanksgiving","Christmas")
+      date = c("2017-01-01","2017-02-14","2017-03-17","2017-05-29","2017-07-04", "2017-09-04", "2017-10-09","2017-11-11","2017-11-23","2017-12-25")
+      Data2 <- subset(allData2, (ORIGIN == input$day_airport | DEST == input$day_airport) )
+      arr_data <- Data2[Data2$FL_DATE %in% date, ]
+      dep_data <- Data2[Data2$FL_DATE %in% date, ]
+      
+      dep_hour <- group_by(dep_data,FL_DATE)  %>% select(ORIGIN) %>% filter(ORIGIN== input$day_airport ) %>% summarise(dep=n()) %>% arrange(FL_DATE)
+      
+      #dep_hour$type = "Departure"
+      
+      arr_hour <- group_by(arr_data,FL_DATE)  %>% select(DEST) %>% filter(DEST==input$day_airport) %>% summarise(arr=n())
+      #arr_hour$type = "Arrival"
+      delay_arr <- group_by(arr_data,FL_DATE) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST==input$day_airport ) %>% summarise(arrival_delays=n())
+      delay_dep <- group_by(dep_data,FL_DATE)  %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(DEP_DELAY <0 & ORIGIN==input$day_airport) %>% summarise(departure_delays=n())
+      
+      
+      data2 <- merge(dep_hour,arr_hour,all=TRUE)
+      data1 <- merge(delay_arr,delay_dep,all=TRUE)
+      c <- merge(data2,data1,all=TRUE)
+      
+      c$event <- Occasion
+      
+      
+      #set a factor for time baised on what clock we are in
+      #data2$hour <- set_time_factor(data2$hour)
+      c <- as.data.frame(c)
+      c
+      
+      
+      
+    }))
+  
+  #####Passenger and Flight##########
+  
+  output$airlineControls <- renderUI({
+    passenger_arrival <- passenger_arrival()
+    n_arrival <- aggregate(PASSENGERS ~ UNIQUE_CARRIER_NAME + MONTH, data = passenger_arrival, sum)
+    arrival <- group_by(allData2,CARRIER,MONTH=month(DEP_TIME_new))  %>% select(DEST,CARRIER ) %>% filter(DEST==input$arrivals_departures_passenger_airport) %>% summarise(Count=n())
+    colnames(n_arrival)[1]="CARRIER"
+    c <- merge(n_arrival,arrival)
+    selectInput("airline_pass","Choose airline", unique(c$CARRIER),selected = NULL )
+  })
+  
+  output$passenger_airline_month <- renderPlot({
+    
+    passenger_arrival <- passenger_arrival()
+    passenger_depart <- passenger_depart()
+    n_arrival <- aggregate(PASSENGERS ~ UNIQUE_CARRIER_NAME + MONTH, data = passenger_arrival, sum)
+    n_depart <- aggregate(PASSENGERS ~ UNIQUE_CARRIER_NAME + MONTH, data = passenger_depart, sum)
+    n_arrival$type = "Arrival"
+    n_depart$type = "DEPARTURE"
+    data1 = merge(n_arrival,n_depart,all=TRUE)
+    arrival <- group_by(allData2,CARRIER,MONTH=month(DEP_TIME_new))  %>% select(DEST,CARRIER ) %>% filter(DEST==input$arrivals_departures_passenger_airport) %>% summarise(Count=n())
+    depart <- group_by(allData2,CARRIER,MONTH=month(DEP_TIME_new))  %>% select(ORIGIN,CARRIER ) %>% filter(ORIGIN==input$arrivals_departures_passenger_airport) %>% summarise(Count=n())
+    arrival$type = "Arrival"
+    depart$type = "DEPARTURE"
+    
+    data2 <- merge(arrival,depart,all=TRUE)
+    colnames(data1)[1]="CARRIER"
+    
+    c <- merge(data1,data2)
+    tt <- c[c$CARRIER== input$airline_pass, ]
+    
+    tt$MONTH <- month.abb[tt$MONTH]
+    
+    normalizer <- max(tt$Count) / max(tt$PASSENGERS)
+    
+    ggplot(tt, aes(x=MONTH,y = PASSENGERS , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="MONTH", y = "Number of passengers") +
+      scale_fill_manual(values=colorsAD) +scale_x_discrete(limits = month.abb)+
+      geom_text(aes(label=PASSENGERS), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+    
+  })
+  
+  output$flight_airline_month <- renderPlot({
+    
+    passenger_arrival <- passenger_arrival()
+    passenger_depart <- passenger_depart()
+    n_arrival <- aggregate(PASSENGERS ~ UNIQUE_CARRIER_NAME + MONTH, data = passenger_arrival, sum)
+    n_depart <- aggregate(PASSENGERS ~ UNIQUE_CARRIER_NAME + MONTH, data = passenger_depart, sum)
+    n_arrival$type = "Arrival"
+    n_depart$type = "DEPARTURE"
+    data1 = merge(n_arrival,n_depart,all=TRUE)
+    arrival <- group_by(allData2,CARRIER,MONTH=month(DEP_TIME_new))  %>% select(DEST,CARRIER ) %>% filter(DEST==input$arrivals_departures_passenger_airport) %>% summarise(Count=n())
+    depart <- group_by(allData2,CARRIER,MONTH=month(DEP_TIME_new))  %>% select(ORIGIN,CARRIER ) %>% filter(ORIGIN==input$arrivals_departures_passenger_airport) %>% summarise(Count=n())
+    arrival$type = "Arrival"
+    depart$type = "DEPARTURE"
+    
+    data2 <- merge(arrival,depart,all=TRUE)
+    colnames(data1)[1]="CARRIER"
+    
+    c <- merge(data1,data2)
+    tt <- c[c$CARRIER== input$airline_pass, ]
+    
+    tt$MONTH <- month.abb[tt$MONTH]
+    
+    normalizer <- max(tt$Count) / max(tt$PASSENGERS)
+    
+    ggplot(tt, aes(x=MONTH,y = Count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="MONTH", y = "Number of Flight") +
+      scale_fill_manual(values=colorsAD) +scale_x_discrete(limits = month.abb)+
+      geom_text(aes(label=Count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+    
+  })
+  
+  
   
   ####### Arrivals & Departures: Airlines Dashboard Tab
 # Allow a user to compare how many arrivals and departures are to and from different distances away.
@@ -991,53 +1195,25 @@ server <- function(input, output) {
     })
     
 ######    
-  output$interestingDays<- DT::renderDataTable(
-    
-    DT::datatable({
+    output$interestingDays<- DT::renderDataTable(
       
-      justOneMonthReactive <- topInterestingDays()
-      #  dep_holiday <- group_by(justOneMonthReactive, holiday_dep) %>% select(ORIGIN_AIRPORT_ID, ORIGIN) %>% filter(ORGIN==input$arrivals_departures_airport) %>% summarise(number_dep=n())
-      # arr_holiday <- group_by(justOneMonthReactive, weekday) %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(number_arrival=n())
+      DT::datatable({
+        
+        
+        
+        HolidayType <- c("Christmas","New Year","Thanksgiving","Independence Day","Labor Day","Columbus Day","Lollapaloza", "Veterans Day")
+        
+        Date <- c("Maybe","Maybe","Yes","Maybe","Maybe","No","Yes","No")
+        
+        results <- table(HolidayType, Date)
+        
+        results
+        
+        
+        
+      })
       
-      #    colnames(dep_holiday)<-c("weekday", "number_dep")
-      
-      #   data11 <- merge(dep_holiday, arr_holiday, all=TRUE)
-      #  data11 <- subset(data11, !is.na(data11$weekday))
-      # data11[is.na(data11)] <- 0
-      # data11 <- as.data.frame(data11)
-      
-      #  data11$weekday <- factor(data11$weekday, levels = dayOfWeek)
-      #  data11
-      
-      #  },
-      #  options = list(pageLength = 8, order = list(list(1, 'asc')))
-      #  )
-      #)  
-      
-      
-      
-    #  HolidayType <- c("Christmas","New Year","Thanksgiving","Independence Day","Labor Day","Columbus Day","Lollapaloza", "Veterans Day")
-    #  Date <- c("Maybe","Maybe","Yes","Maybe","Maybe","No","Yes","No")
-    #  results <- table(HolidayType, Date)
-    #  results
-      
-      data=data.table(Occasion = c("Christmas","New Year's Day","Thanksgiving", "Independence Day", "Labor Day", "Lollapalooza", "Veteran's Day", "Memorial Day", "Columbus Day", "Presidents' Day"), 
-                      Date= c("December 25", "December 31", "November 23", "July 4", "September 4", "August 3", "November 11", "May 29", "October 9", "February 20" ), 
-                      NumberofFlights=5:8)
-      data
-      
-      
-      
-      
-      
-    })
-    
-  )
-  
-  
-  
-  
-  
+    )
   
   ########### Delays Dashboard Tab
   #### O'Hare charts
@@ -1363,6 +1539,56 @@ server <- function(input, output) {
     }
   )
   
+  ### heatmap of set###
+  output$HeatArrHourMon <- renderPlot(
+    {
+      OhrArr <- subset(allData2, DEST== "ORD")
+      OhrArr2 <- group_by(OhrArr,hour, month(OhrArr$ARR_TIME_new) ) %>% select(DEST,hour, ARR_TIME_new )  %>% summarise(count=n())
+      OhrArr2$hour<-switch_hour(OhrArr2$hour)
+      colnames(OhrArr2)<-c("Hour","Month", "Count")
+      OhrArr2$scale <- scale(OhrArr2$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
+      OhrArr2$Month <- month.abb[OhrArr2$Month]
+      OhrArr2$Month <- factor(OhrArr2$Month, levels = month.abb)
+      
+      OhrArr2_delay <- group_by(OhrArr,hour, month(OhrArr$ARR_TIME_new) ) %>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST=="ORD" ) %>% summarise(arrival_delays=n())
+      OhrArr2_delay$hour<-switch_hour(OhrArr2_delay$hour)
+      colnames(OhrArr2_delay)<-c("Hour","Month", "Count")
+      OhrArr2_delay$scale <- scale(OhrArr2_delay$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
+      OhrArr2_delay$Month <- month.abb[OhrArr2_delay$Month]
+      OhrArr2_delay$Month <- factor(OhrArr2_delay$Month, levels = month.abb)
+      
+      p1<-ggplot(OhrArr2, aes(x=Hour, y=Month )) +
+        geom_tile(aes(fill = Count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = "black", size = 4)
+      #scale_y_continuous(breaks=c(3,6,9,12))
+      
+      p2<-ggplot(OhrArr2_delay, aes(x=Hour, y=Month )) +
+        geom_tile(aes(fill = Count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = "black", size = 4)
+      #scale_y_continuous(breaks=c(3,6,9,12))
+      
+      grid.arrange(arrangeGrob(arrangeGrob(p1,p2),ncol=2,widths=c(5/6,1/6)))
+      
+    }
+  )
+  output$HeatArrHourWeek <- renderPlot(
+    {
+      OhrArr <- subset(allData2, DEST== "ORD")
+      OhrArr2 <- group_by(OhrArr,hour, weekday) %>% select(DEST,hour, weekday )  %>% summarise(count=n())
+      OhrArr2$hour<-switch_hour(OhrArr2$hour)
+      colnames(OhrArr2)<-c("Hour","Week", "Count")
+      OhrArr2$scale <- scale(OhrArr2$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
+      
+      OhrArr2$Week <- factor(OhrArr2$Week, levels = dayOfWeek )
+      ggplot(OhrArr2, aes(x=Hour, y=Week )) +
+        geom_tile(aes(fill = Count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Week, label = Count), color = "black", size = 4)
+      #scale_y_continuous(breaks=c(3,6,9,12))
+    }
+  )
   
   output$HeatArrMonORD <- renderPlot(
     {
