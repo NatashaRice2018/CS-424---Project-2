@@ -473,18 +473,18 @@ ui <-
                     selectInput("day", "Day of the Week ", choices=days), width=4
                   )),
                 fluidRow(
-                  box(title = "Departures/Arrivals for selected Date by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
+                  box(title = "Departures/Arrivals for selected Day by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("DayDepArrHrMDW")),
                   
-                  box(title = "Departures/Arrivals for selected date by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                  box(title = "Departures/Arrivals for selected Day by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("DayDepArrHrORD")
                   )
                 ),
                 fluidRow(
-                  box(title = "Delays for selected Date by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
+                  box(title = "Delays for selected Day by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("DayDelayMDW")),
                   
-                  box(title = "Delays for selected date by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                  box(title = "Delays for selected Day  by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("DayDelayORD")
                   )
                 )
