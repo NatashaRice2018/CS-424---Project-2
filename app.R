@@ -339,7 +339,7 @@ ui <-
                 
                 fluidRow(
                   
-                  box(title = "10 Busiest Days/Holidays ", solidHeader = TRUE, status = "primary",width = 4,
+                  box(title = "Top 10 Interesting Days ", solidHeader = TRUE, status = "primary",width = 4,
                       
                       dataTableOutput("interestingDays"))
                   
@@ -462,6 +462,7 @@ server <- function(input, output) {
   arrivalsDeparturesMonth <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$arrivals_departures_month)})
   delaysMonth <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$delays_month)})
   topAirportsMonth <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$top_airports_month)})
+  topInterestingDays <- reactive({subset(allData2, month(allData2$ARR_TIME_new) == input$top_interesting_days)})
   
   output$result <- renderText({
     paste("You chose month:", input$Month, "and airport:", input$Airport)
@@ -751,15 +752,38 @@ server <- function(input, output) {
     
     DT::datatable({
       
+      justOneMonthReactive <- topInterestingDays()
+      #  dep_holiday <- group_by(justOneMonthReactive, holiday_dep) %>% select(ORIGIN_AIRPORT_ID, ORIGIN) %>% filter(ORGIN==input$arrivals_departures_airport) %>% summarise(number_dep=n())
+      # arr_holiday <- group_by(justOneMonthReactive, weekday) %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(number_arrival=n())
+      
+      #    colnames(dep_holiday)<-c("weekday", "number_dep")
+      
+      #   data11 <- merge(dep_holiday, arr_holiday, all=TRUE)
+      #  data11 <- subset(data11, !is.na(data11$weekday))
+      # data11[is.na(data11)] <- 0
+      # data11 <- as.data.frame(data11)
+      
+      #  data11$weekday <- factor(data11$weekday, levels = dayOfWeek)
+      #  data11
+      
+      #  },
+      #  options = list(pageLength = 8, order = list(list(1, 'asc')))
+      #  )
+      #)  
       
       
-      HolidayType <- c("Christmas","New Year","Thanksgiving","Independence Day","Labor Day","Columbus Day","Lollapaloza", "Veterans Day")
       
-      Date <- c("Maybe","Maybe","Yes","Maybe","Maybe","No","Yes","No")
+    #  HolidayType <- c("Christmas","New Year","Thanksgiving","Independence Day","Labor Day","Columbus Day","Lollapaloza", "Veterans Day")
+    #  Date <- c("Maybe","Maybe","Yes","Maybe","Maybe","No","Yes","No")
+    #  results <- table(HolidayType, Date)
+    #  results
       
-      results <- table(HolidayType, Date)
+      data=data.table(Occasion = c("Christmas","New Year's Day","Thanksgiving", "Independence Day", "Labor Day", "Lollapalooza", "Veteran's Day", "Memorial Day", "Columbus Day", "Presidents' Day"), 
+                      Date= c("December 25", "December 31", "November 23", "July 4", "September 4", "August 3", "November 11", "May 29", "October 9", "February 20" ), 
+                      NumberofFlights=5:8)
+      data
       
-      results
+      
       
       
       
