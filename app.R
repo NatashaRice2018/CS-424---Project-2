@@ -227,31 +227,29 @@ ui <-
                         box(
                           selectInput("arrivals_departures_airlines_month", "Select the month to visualize", choices=months, selected = 8)
                         ),
-                        #box(
-                          #ORD MDW Choice
-                          #selectInput("arrivals_departures_airlines_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW')
-                        #),
                         
                         textOutput("arrivals_departures_airlines_result")
                         
                       ), 
                       fluidRow(
-                        
-                        box(title = "O'Hare Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 6,
+                        box( title = "O'Hare Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 8,
+                             plotOutput("TotalDepAriORD")
+                        ),
+                        box(title = "O'Hare Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 4,
                             
                             dataTableOutput("tab1_ord")
                             
+                        )
+                      ),
+                      fluidRow(
+                        
+                        box( title = "Midway Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 4,
+                             plotOutput("TotalDepAriMDW")
                         ),
-                        box( title = "O'Hare Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 6,
-                             plotOutput("TotalDepAriORD")
-                        ),
-                        box(title = "Midway Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 6,
+                        box(title = "Midway Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 8,
                             
                             dataTableOutput("tab1_mdw")
                             
-                        ),
-                        box( title = "Midway Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 6,
-                             plotOutput("TotalDepAriMDW")
                         )
                         
                       )
@@ -346,14 +344,14 @@ ui <-
                             box(title = "O'Hare's 15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 4,
                                 dataTableOutput("tab5_ord")),
                             box( title = "O'Hare's 15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
-                                 plotOutput("BarTop10ORD")
+                                 plotOutput("BarTop10ORD", height=750)
                             )
                           ),
                           fluidRow( 
                             box(title = "Midway's 15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 4,
                                 dataTableOutput("tab5_mdw")),
                             box( title = "Midway's 15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
-                                 plotOutput("BarTop10MDW")
+                                 plotOutput("BarTop10MDW", height=750)
                             )
                           )
                       ),
@@ -363,7 +361,6 @@ ui <-
                                   plotOutput("Top15DestAirportsOrd")),
                               box(title = "top 15 airports by month Midway", solidHeader = TRUE, status = "primary", width = 6,
                                   plotOutput("Top15DestAirportsMdw"))
-                              
                             )
                       ),
                       tabPanel("Airport Comparison",
@@ -387,11 +384,15 @@ ui <-
           ) # end fluid row
         ),
         tabItem("map",
-                box(title = "Percentage of Arrivals from Illinois", solidHeader = TRUE, status = "primary", width = 6,
-                    plotlyOutput("MapDeparturePercent")
+                fluidRow(
+                  box(title = "Percentage of Arrivals from Illinois", solidHeader = TRUE, status = "primary", width = 12,
+                      plotlyOutput("MapDeparturePercent", height=900)
+                  )
                 ),
-                box(title = "Percentage of Departures from Illinois", solidHeader = TRUE, status = "primary", width = 6,
-                    plotlyOutput("MapArrivalePercent")
+                fluidRow(
+                  box(title = "Percentage of Departures from Illinois", solidHeader = TRUE, status = "primary", width = 12,
+                      plotlyOutput("MapArrivalePercent", height=900)
+                  )
                 )
         ),
         
@@ -438,8 +439,10 @@ ui <-
                 ),
                 fluidRow(
                   box(title = "Departures/Arrivals for selected Airport by hour at Midway", solidHeader = TRUE, status = "primary", width = 6,
-                      plotOutput("AirlineDepartureHRMDW")),
-                  
+                      plotOutput("AirlineDepartureHRMDW")
+                  )
+                ),
+                fluidRow(
                   box(title = "Departures/Arrivals for selected Airport by hour at O'Hare", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("AirlineDepartureHrORD")
                   )
@@ -518,7 +521,7 @@ server <- function(input, output) {
   
   
   # increase the default font size
-  theme_set(theme_grey(base_size = 18)) 
+  theme_set(theme_grey(base_size = 32)) 
   
   colorsAD <- c('#334464','#9DADBF')
   #Blue Gradient
@@ -738,7 +741,7 @@ server <- function(input, output) {
       labs(x="Ariline", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 8300))
     
   })
   
@@ -776,7 +779,7 @@ server <- function(input, output) {
       labs(x="Ariline", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 8300))
     
   }) 
   
@@ -832,7 +835,7 @@ server <- function(input, output) {
         labs(x="Hour", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=-0.3,
-                  position = position_dodge(0.9), size=3.5)
+                  position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 2200))
       
     })
     
@@ -881,7 +884,7 @@ server <- function(input, output) {
         labs(x="Day", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=Count), vjust=-0.3,
-                  position = position_dodge(0.9), size=3.5)
+                  position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 4500))
       
     })
   #### Midway Charts
@@ -934,7 +937,7 @@ server <- function(input, output) {
         labs(x="Hour", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=-0.3,
-                  position = position_dodge(0.9), size=3.5)
+                  position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 2200))
       
     })
     
@@ -983,7 +986,7 @@ server <- function(input, output) {
         labs(x="Day", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=Count), vjust=-0.3,
-                  position = position_dodge(0.9), size=3.5)
+                  position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 4500))
       
     })
     
@@ -1246,7 +1249,7 @@ server <- function(input, output) {
       labs(x="Airport", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 850))
   })
   ### Midway charts
   # Table: the number of flights for the most common 15 destination and airports airports for selected airport
@@ -1293,7 +1296,7 @@ server <- function(input, output) {
       labs(x="Airport", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 850))
   })
   
   # top 50 airport selected 
