@@ -220,10 +220,10 @@ ui <-
                     tabPanel("Additional Heatmaps",
                              fluidRow(
                                
-                               box(title = "Heatmap week", solidHeader = TRUE, status = "primary",width = 12,
+                               box(title = "Heatmap Month vs Hour", solidHeader = TRUE, status = "primary",width = 12,
                                    
                                    plotOutput("HeatArrHourMon", height=800)),
-                               box(title = "Heatmap hour", solidHeader = TRUE, status = "primary",width = 12,
+                               box(title = "Heatmap Week vs Hour", solidHeader = TRUE, status = "primary",width = 12,
                                    plotOutput("HeatArrHourWeek"))
                              )
                     ),
@@ -1532,21 +1532,21 @@ server <- function(input, output) {
       OhrArr2_delay$hour<-switch_hour(OhrArr2_delay$hour)
       OhrArr2_delay$hour <- set_time_factor(OhrArr2_delay$hour)
       
-      colnames(OhrArr2_delay)<-c('Hour','Month', 'Count')
+      colnames(OhrArr2_delay)<-c("Hour","Month", "Count")
       OhrArr2_delay$scale <- scale(OhrArr2_delay$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
       OhrArr2_delay$Month <- month.abb[OhrArr2_delay$Month]
       OhrArr2_delay$Month <- factor(OhrArr2_delay$Month, levels = month.abb)
       
-      p1<-ggplot(OhrArr2, aes(x=Hour, y=Month )) +
-        geom_tile(aes(fill = Count), colour = 'white') +
+      p1<-ggplot(OhrArr2, aes(x=Hour, y=Month )) + ggtitle("the number of arrival")+
+        geom_tile(aes(fill = Count), colour = "white") + 
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
-        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = 'black', size = 4)
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = "black", size = 4)
       #scale_y_continuous(breaks=c(3,6,9,12))
       
-      p2<-ggplot(OhrArr2_delay, aes(x=Hour, y=Month )) +
-        geom_tile(aes(fill = Count), colour = 'white') +
+      p2<-ggplot(OhrArr2_delay, aes(x=Hour, y=Month )) + ggtitle("the number of arrival delay")+
+        geom_tile(aes(fill = Count), colour = "white") + 
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
-        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = 'black', size = 4)
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = "black", size = 4)
       #scale_y_continuous(breaks=c(3,6,9,12))
       
       OhrArr <- subset(allData2, ORIGIN== input$day_airport)
@@ -1555,7 +1555,7 @@ server <- function(input, output) {
       OhrArr2$hour_dep<-switch_hour(OhrArr2$hour_dep)
       OhrArr2$hour_dep <- set_time_factor(OhrArr2$hour_dep)
       
-      colnames(OhrArr2)<-c('Hour','Month', 'Count')
+      colnames(OhrArr2)<-c("Hour","Month", "Count")
       OhrArr2$scale <- scale(OhrArr2$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
       OhrArr2$Month <- month.abb[OhrArr2$Month]
       OhrArr2$Month <- factor(OhrArr2$Month, levels = month.abb)
@@ -1570,14 +1570,14 @@ server <- function(input, output) {
       OhrArr2_delay$Month <- month.abb[OhrArr2_delay$Month]
       OhrArr2_delay$Month <- factor(OhrArr2_delay$Month, levels = month.abb)
       
-      p3<-ggplot(OhrArr2, aes(x=Hour, y=Month )) +
-        geom_tile(aes(fill = Count), colour = "white") +
+      p3<-ggplot(OhrArr2, aes(x=Hour, y=Month )) + ggtitle("the number of departure")+
+        geom_tile(aes(fill = Count), colour = "white") + 
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
         theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = "black", size = 4)
       #scale_y_continuous(breaks=c(3,6,9,12))
       
-      p4<-ggplot(OhrArr2_delay, aes(x=Hour, y=Month )) +
-        geom_tile(aes(fill = Count), colour = "white") +
+      p4<-ggplot(OhrArr2_delay, aes(x=Hour, y=Month )) + ggtitle("the number of departure delay")+
+        geom_tile(aes(fill = Count), colour = "white") + 
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
         theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Month, label = Count), color = "black", size = 4)
       #scale_y_continuous(breaks=c(3,6,9,12))
@@ -1593,7 +1593,7 @@ server <- function(input, output) {
       OhrArr2 <- group_by(OhrArr,hour, weekday) %>% select(DEST,hour, weekday )  %>% summarise(count=n())
       OhrArr2$hour<-switch_hour(OhrArr2$hour)
       OhrArr2$hour <- set_time_factor(OhrArr2$hour)
-      
+
       colnames(OhrArr2)<-c("Hour","Week", "Count")
       OhrArr2$scale <- scale(OhrArr2$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
       OhrArr2$Week <- factor(OhrArr2$Week, levels = dayOfWeek )
@@ -1608,13 +1608,13 @@ server <- function(input, output) {
       
       
       
-      p1<-ggplot(OhrArr2, aes(x=Hour, y=Week )) +
+      p1<-ggplot(OhrArr2, aes(x=Hour, y=Week )) + ggtitle("the number of arrival")+
         geom_tile(aes(fill = Count), colour = "white") + 
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
         theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Week, label = Count), color = "black", size = 4)
       #scale_y_continuous(breaks=c(3,6,9,12))
       
-      p2<-ggplot(OhrArr2_delay, aes(x=Hour, y=Week )) +
+      p2<-ggplot(OhrArr2_delay, aes(x=Hour, y=Week )) + ggtitle("the number of arrival delay")+
         geom_tile(aes(fill = Count), colour = "white") + 
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
         theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Week, label = Count), color = "black", size = 4)
@@ -1639,13 +1639,13 @@ server <- function(input, output) {
       
       
       
-      p3<-ggplot(OhrArr2, aes(x=Hour, y=Week )) +
+      p3<-ggplot(OhrArr2, aes(x=Hour, y=Week )) + ggtitle("the number of departure")+
         geom_tile(aes(fill = Count), colour = "white") + 
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
         theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Week, label = Count), color = "black", size = 4)
       #scale_y_continuous(breaks=c(3,6,9,12))
       
-      p4<-ggplot(OhrArr2_delay, aes(x=Hour, y=Week )) +
+      p4<-ggplot(OhrArr2_delay, aes(x=Hour, y=Week )) + ggtitle("the number of departure delay")+
         geom_tile(aes(fill = Count), colour = "white") + 
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
         theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Week, label = Count), color = "black", size = 4)
@@ -1656,6 +1656,7 @@ server <- function(input, output) {
       grid.arrange(arrangeGrob(arrangeGrob(p1,p2,p3,p4),ncol=1))
     }
   )
+  
   
   output$HeatArrMonORD <- renderPlot(
     {
