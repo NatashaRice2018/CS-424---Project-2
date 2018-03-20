@@ -108,7 +108,7 @@ ui <-
     
     dashboardHeader(title = "Learning to Fly",
                     titleWidth=650
-                    ),
+    ),
     
     dashboardSidebar(
       width= 650,
@@ -126,14 +126,14 @@ ui <-
         menuItem("Flight Distances", tabName="flight_distances"),
         menuItem("Flight Facts", tabName="flight_facts"),
         menuItem("Unit",
-          box(
-            selectInput("Unit","Miles or Kilometers", choices=c("Miles","Kilometers"), selected = 'Miles'), width=650
-          )
+                 box(
+                   selectInput("Unit","Miles or Kilometers", choices=c("Miles","Kilometers"), selected = 'Miles'), width=650
+                 )
         ),
         menuItem("Time",
-           box(
-             selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour'), width=650
-           )
+                 box(
+                   selectInput("Time", "12 hour am/pm time or 24 hour time ", choices=t, selected = '24 hour'), width=650
+                 )
         )
       )
       
@@ -154,46 +154,46 @@ ui <-
                 fluidRow(
                   tabBox(
                     tabPanel("Month Comparison",
-                            fluidRow(
-                                  box(
-                                    selectInput("arrivals_departures_month", "Select the month to visualize", choices=months, selected = 8), width=6
-                                  )
-
-                            ),
-                            fluidRow(
-                              column(width=2,
-                                  box(title = "O'Hare Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 12,
-                                        dataTableOutput("tab2_ohare"), style="font-size:100%"
-                                  )
-                              ),
-                              column(width=2,
-                                  box(title = "Midway Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 12,
-                                      dataTableOutput("tab2_mdw")
-                                  )
-                              ),
-                              column(width=8,
-                                  box( title = "O'Hare Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 12,
-                                       plotOutput("BarByTimeOhare")
-                                  ),
-                                  box( title = "Midway Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 12,
-                                       plotOutput("BarByTimeMDW")
-                                  )
-                              )
-                            ),
-                            fluidRow(
-                                box(title = "O'Hare Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 2,
-                                    dataTableOutput("tab3_ohare")
-                                ),
-                                box(title = "Midway Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 2,
-                                    dataTableOutput("tab3_mdw")
-                                ),
-                                box( title = "O'Hare Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 4,
-                                     plotOutput("BarByWeekdayOhare")
-                                ),
-                                box( title = "Midway Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 4,
-                                     plotOutput("BarByWeekdayMDW")
-                                )
-                            )
+                             fluidRow(
+                               box(
+                                 selectInput("arrivals_departures_month", "Select the month to visualize", choices=months, selected = 8), width=6
+                               )
+                               
+                             ),
+                             fluidRow(
+                               column(width=2,
+                                      box(title = "O'Hare Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 12,
+                                          dataTableOutput("tab2_ohare"), style="font-size:100%"
+                                      )
+                               ),
+                               column(width=2,
+                                      box(title = "Midway Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 12,
+                                          dataTableOutput("tab2_mdw")
+                                      )
+                               ),
+                               column(width=8,
+                                      box( title = "O'Hare Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 12,
+                                           plotOutput("BarByTimeOhare")
+                                      ),
+                                      box( title = "Midway Arrivals and Departures by Hour", solidHeader = TRUE, status = "primary", width = 12,
+                                           plotOutput("BarByTimeMDW")
+                                      )
+                               )
+                             ),
+                             fluidRow(
+                               box(title = "O'Hare Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 2,
+                                   dataTableOutput("tab3_ohare")
+                               ),
+                               box(title = "Midway Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 2,
+                                   dataTableOutput("tab3_mdw")
+                               ),
+                               box( title = "O'Hare Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 4,
+                                    plotOutput("BarByWeekdayOhare")
+                               ),
+                               box( title = "Midway Arrivals and Departures by Day of Week", solidHeader = TRUE, status = "primary", width = 4,
+                                    plotOutput("BarByWeekdayMDW")
+                               )
+                             )
                     ),
                     tabPanel("Month-To-Month Comparison",
                              fluidRow(
@@ -236,162 +236,162 @@ ui <-
                 fluidRow(
                   tabBox(
                     tabPanel("Month Comparison",
-                      fluidRow(
-                        box(
-                          selectInput("arrivals_departures_airlines_month", "Select the month to visualize", choices=months, selected = 8)
-                        ),
-                        
-                        textOutput("arrivals_departures_airlines_result")
-                        
-                      ), 
-                      fluidRow(
-                        box(title = "O'Hare Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 3,
-                            
-                            dataTableOutput("tab1_ord")
-                            
-                        ),
-                        box( title = "O'Hare Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 9,
-                             plotOutput("TotalDepAriORD")
-                        )
-                      ),
-                      fluidRow(
-                        
-                        box(title = "Midway Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 3,
-                            dataTableOutput("tab1_mdw")
-                        ),
-                        box( title = "Midway Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 9,
-                             plotOutput("TotalDepAriMDW")
-                        )
-                      )
+                             fluidRow(
+                               box(
+                                 selectInput("arrivals_departures_airlines_month", "Select the month to visualize", choices=months, selected = 8)
+                               ),
+                               
+                               textOutput("arrivals_departures_airlines_result")
+                               
+                             ), 
+                             fluidRow(
+                               box(title = "O'Hare Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 3,
+                                   
+                                   dataTableOutput("tab1_ord")
+                                   
+                               ),
+                               box( title = "O'Hare Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 9,
+                                    plotOutput("TotalDepAriORD")
+                               )
+                             ),
+                             fluidRow(
+                               
+                               box(title = "Midway Departures and Arrivals By Airline", solidHeader = TRUE, status = "primary", width = 3,
+                                   dataTableOutput("tab1_mdw")
+                               ),
+                               box( title = "Midway Departure and Arrival Totals By Airline", solidHeader = TRUE, status = "primary", width = 9,
+                                    plotOutput("TotalDepAriMDW")
+                               )
+                             )
                     ),
-                  tabPanel( "Month to Month Comparison",
-                    fluidRow(
-                      
-                      box( title = "Arrivals in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                           plotOutput("HeatArrMonORD")
-                      ),
-                      
-                      box( title = "Departures in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                           plotOutput("HeatDepMonORD")
-                      )
-                      
-                    ),
-                    fluidRow(
-                      
-                      box( title = "Arrivals in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                           plotOutput("HeatArrMonMDW")
-                      ),
-                      
-                      box( title = "Departures in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
-                           plotOutput("HeatDepMonMDW")
-                      )
-                    )
-                  ), # end tab panel
-                width=12) #end tab box
-              ) # end fluid row
+                    tabPanel( "Month to Month Comparison",
+                              fluidRow(
+                                
+                                box( title = "Arrivals in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                                     plotOutput("HeatArrMonORD")
+                                ),
+                                
+                                box( title = "Departures in O'Hare By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                                     plotOutput("HeatDepMonORD")
+                                )
+                                
+                              ),
+                              fluidRow(
+                                
+                                box( title = "Arrivals in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                                     plotOutput("HeatArrMonMDW")
+                                ),
+                                
+                                box( title = "Departures in Midway By Airline and Month", solidHeader = TRUE, status = "primary", width = 6,
+                                     plotOutput("HeatDepMonMDW")
+                                )
+                              )
+                    ), # end tab panel
+                    width=12) #end tab box
+                ) # end fluid row
         ),
         tabItem("delays",                
                 fluidRow(
-                    tabBox(
-                      tabPanel("Month Comparison",
-                          fluidRow(
-                            box(
-                              selectInput("delays_month", "Select the month to visualize", choices=months, selected = 4), width=4
-                            )
-                            #box(
-                              #ORD/MDW choice
-                              #selectInput("delays_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
-                            #)
-                          ),
-                          fluidRow (
-                            box(title = "O'Hare Delays Per Hour", solidHeader = TRUE, status = "primary",width = 4,
-                                dataTableOutput("tab4_ord")),
-                            
-                            box( title = "O'Hare Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 8,
-                                 plotOutput("BarDelaybyHourORD", height=800)
-                            )
-                          ),
-                          fluidRow (
-                            box(title = "Midway Delays Per Hour", solidHeader = TRUE, status = "primary",width = 4,
-                                dataTableOutput("tab4_mdw")),
-                            
-                            box( title = "Midway Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 8,
-                                 plotOutput("BarDelaybyHourMDW", height=800)
-                            )
-                          )
-                      ),
-                      tabPanel("Month-To-Month Comparison",
-                          fluidRow (
-                            box(title = "Delays Change By month Midway", solidHeader = TRUE, status = "primary",width = 6,
-                                plotOutput("NumAndTypeOfDelayChangeMDW")),
-                            box(title = "Delays Change By month O'Hare", solidHeader = TRUE, status = "primary",width = 6,
-                                plotOutput("NumAndTypeOfDelayChangeORD"))
-                          )
-                      ),
-                      tabPanel("Delay Type Comparison",
-                          fluidRow(
-                            box(selectInput("delay_type", "Select delay type", choices=delays_type, selected = NULL), width=8),
-                            box(title = "Delay Type Change By month", solidHeader = TRUE, status = "primary",width = 6,
-                                plotOutput("delay_type_month")),
-                            box(title = "Delay Type Change By hour", solidHeader = TRUE, status = "primary",width = 10, plotOutput("delay_type_hour")
-                                )
-                            
-                          )
-                      ), 
+                  tabBox(
+                    tabPanel("Month Comparison",
+                             fluidRow(
+                               box(
+                                 selectInput("delays_month", "Select the month to visualize", choices=months, selected = 4), width=4
+                               )
+                               #box(
+                               #ORD/MDW choice
+                               #selectInput("delays_airport", "Select the base airport to visualize", choices=loc, selected = 'MDW'), width=8
+                               #)
+                             ),
+                             fluidRow (
+                               box(title = "O'Hare Delays Per Hour", solidHeader = TRUE, status = "primary",width = 4,
+                                   dataTableOutput("tab4_ord")),
+                               
+                               box( title = "O'Hare Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 8,
+                                    plotOutput("BarDelaybyHourORD", height=800)
+                               )
+                             ),
+                             fluidRow (
+                               box(title = "Midway Delays Per Hour", solidHeader = TRUE, status = "primary",width = 4,
+                                   dataTableOutput("tab4_mdw")),
+                               
+                               box( title = "Midway Delays Per Hour By Chosen Airport", solidHeader = TRUE, status = "primary", width = 8,
+                                    plotOutput("BarDelaybyHourMDW", height=800)
+                               )
+                             )
+                    ),
+                    tabPanel("Month-To-Month Comparison",
+                             fluidRow (
+                               box(title = "Delays Change By month Midway", solidHeader = TRUE, status = "primary",width = 6,
+                                   plotOutput("NumAndTypeOfDelayChangeMDW")),
+                               box(title = "Delays Change By month O'Hare", solidHeader = TRUE, status = "primary",width = 6,
+                                   plotOutput("NumAndTypeOfDelayChangeORD"))
+                             )
+                    ),
+                    tabPanel("Delay Type Comparison",
+                             fluidRow(
+                               box(selectInput("delay_type", "Select delay type", choices=delays_type, selected = NULL), width=8),
+                               box(title = "Delay Type Change By month", solidHeader = TRUE, status = "primary",width = 6,
+                                   plotOutput("delay_type_month")),
+                               box(title = "Delay Type Change By hour", solidHeader = TRUE, status = "primary",width = 10, plotOutput("delay_type_hour")
+                               )
+                               
+                             )
+                    ), 
                     width=12) #end tab box
                 ) # end fluid row
         ), #end tab item
         tabItem("top_airports",                
                 fluidRow(
-                    tabBox(
-                      tabPanel("Month Comparison",
-                          fluidRow(
-                            box(
-                              selectInput("top_airports_month", "Select the month to visualize", choices=months, selected = 4), width=4
-                            )
-                          ),
-                          fluidRow( 
-                            box(title = "O'Hare's 15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 4,
-                                dataTableOutput("tab5_ord")),
-                            box( title = "O'Hare's 15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
-                                 plotOutput("BarTop10ORD", height=750)
-                            )
-                          ),
-                          fluidRow( 
-                            box(title = "Midway's 15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 4,
-                                dataTableOutput("tab5_mdw")),
-                            box( title = "Midway's 15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
-                                 plotOutput("BarTop10MDW", height=750)
-                            )
-                          )
-                      ),
-                      tabPanel("Month-To-Month Comparison",
-                            fluidRow(
-                              box(title = "top 15 airports by month O'Hare", solidHeader = TRUE, status = "primary", width = 6,
-                                  plotOutput("Top15DestAirportsOrd")),
-                              box(title = "top 15 airports by month Midway", solidHeader = TRUE, status = "primary", width = 6,
-                                  plotOutput("Top15DestAirportsMdw"))
-                            )
-                      ),
-                      tabPanel("Airport Comparison",
-                          fluidRow(
-                            #box(selectInput("top50_airport","Pick a airport",choices = top50, selected = '',width = 4)),
-                            box(title = "Top 50 airports", solidHeader = TRUE, status = "primary", width = 12,
-                                uiOutput("top50Controls") 
-                                )
-                            ),
-                          fluidRow(
-                            box(title = "Arrivals & Departures By Hour for Selected Airport", solidHeader = TRUE, status = "primary", width = 12,
-                                plotOutput("Top50Airport_hour")
-                                )
-                          ),
-                          fluidRow(
-                            box(title = "Arrivals & Departures By Month for Selected Airport", solidHeader = TRUE, status = "primary", width = 12,
-                                plotOutput("Top50Airports_month"))
-                          )
+                  tabBox(
+                    tabPanel("Month Comparison",
+                             fluidRow(
+                               box(
+                                 selectInput("top_airports_month", "Select the month to visualize", choices=months, selected = 4), width=4
+                               )
+                             ),
+                             fluidRow( 
+                               box(title = "O'Hare's 15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 4,
+                                   dataTableOutput("tab5_ord")),
+                               box( title = "O'Hare's 15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
+                                    plotOutput("BarTop10ORD", height=750)
+                               )
+                             ),
+                             fluidRow( 
+                               box(title = "Midway's 15 Most Common Airports ", solidHeader = TRUE, status = "primary",width = 4,
+                                   dataTableOutput("tab5_mdw")),
+                               box( title = "Midway's 15 Most Common Airports", solidHeader = TRUE, status = "primary", width = 8,
+                                    plotOutput("BarTop10MDW", height=750)
+                               )
+                             )
+                    ),
+                    tabPanel("Month-To-Month Comparison",
+                             fluidRow(
+                               box(title = "top 15 airports by month O'Hare", solidHeader = TRUE, status = "primary", width = 6,
+                                   plotOutput("Top15DestAirportsOrd")),
+                               box(title = "top 15 airports by month Midway", solidHeader = TRUE, status = "primary", width = 6,
+                                   plotOutput("Top15DestAirportsMdw"))
+                             )
+                    ),
+                    tabPanel("Airport Comparison",
+                             fluidRow(
+                               #box(selectInput("top50_airport","Pick a airport",choices = top50, selected = '',width = 4)),
+                               box(title = "Top 50 airports", solidHeader = TRUE, status = "primary", width = 12,
+                                   uiOutput("top50Controls") 
+                               )
+                             ),
+                             fluidRow(
+                               box(title = "Arrivals & Departures By Hour for Selected Airport", solidHeader = TRUE, status = "primary", width = 12,
+                                   plotOutput("Top50Airport_hour")
+                               )
+                             ),
+                             fluidRow(
+                               box(title = "Arrivals & Departures By Month for Selected Airport", solidHeader = TRUE, status = "primary", width = 12,
+                                   plotOutput("Top50Airports_month"))
+                             )
                     ), # end tab panel
-            width = 12) #end tab box
-          ) # end fluid row
+                    width = 12) #end tab box
+                ) # end fluid row
         ),
         tabItem("map",
                 fluidRow(
@@ -503,7 +503,7 @@ ui <-
                   box(title = "Flight Time:", solidHeader = TRUE, status = "primary", width = 8,
                       plotOutput("numFlightTime") )
                 )
-         ),
+        ),
         tabItem("flight_facts",
                 fluidRow(
                   box(
@@ -519,13 +519,13 @@ ui <-
                       uiOutput("airlineControls") )
                 ),
                 fluidRow(
-                 box(title = "Passengers for selected airline by Month", solidHeader = TRUE, status = "primary", width = 6,
+                  box(title = "Passengers for selected airline by Month", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("passenger_airline_month")) 
                 ),
                 fluidRow({
                   box(title = "Flights for selected airline by Month", solidHeader = TRUE, status = "primary", width = 6,
                       plotOutput("flight_airline_month"))
-                  }
+                }
                 )        
         )
       ) # end of TabItems 
@@ -590,9 +590,9 @@ server <- function(input, output) {
     } 
     tem 
   }
-    
-    
-    
+  
+  
+  
   switch_hour<- function(x){
     c <- x
     #ifelse(input$Time=="24 hour", c<-paste(c$hour,":00",sep=""), ifelse(c<12, paste(c,":00 AM",sep=""),paste(cc-12,":00 PM",sep = "")))
@@ -806,7 +806,7 @@ server <- function(input, output) {
   
   
   ####### Arrivals & Departures: Airlines Dashboard Tab
-# Allow a user to compare how many arrivals and departures are to and from different distances away.
+  # Allow a user to compare how many arrivals and departures are to and from different distances away.
   output$distance <- renderUI({
     #justOneMonthReactive <- topAirportsMonth()
     tem <- allData2$DISTANCE
@@ -820,29 +820,29 @@ server <- function(input, output) {
     #textOutput('text_distance')
     
   })
- output$numDistance_bar <- renderPlot({
-   tem <- allData2$DISTANCE
-   allData2$DISTANCE <- switch_km(allData2$DISTANCE)
-   tem1 <- c(0,249,499,749,999,1249,1499,1749,1999,2249,2499,100000)
-   tem1 <- switch_km(tem1)
-   allData2$group = cut(allData2$DISTANCE,tem1)
-   n_arrival <- group_by(allData2,group)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport) %>% summarise(Count=n())
-   n_depart <- group_by(allData2,group)  %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(Count=n())
-   n_arrival$type = "Departure"
-   n_depart$type ="Arrival"
-   data1 <- merge(n_arrival,n_depart,all=TRUE)
-   data1 <- data1[complete.cases(data1), ]
-   data1 <- as.data.frame(data1)
-   allData2$DISTANCE <- tem
-   ggplot(data1, aes(x=group,y = Count , fill=type)) + 
-     geom_bar(stat = "identity", position = "dodge") +
-     labs(x="Distance Group", y = "Number of Flights") +
-     scale_fill_manual(values=colorsAD) +
-     geom_text(aes(label=Count), vjust=-0.3,
-               position = position_dodge(0.9), size=3.5)
- }
-   
- )
+  output$numDistance_bar <- renderPlot({
+    tem <- allData2$DISTANCE
+    allData2$DISTANCE <- switch_km(allData2$DISTANCE)
+    tem1 <- c(0,249,499,749,999,1249,1499,1749,1999,2249,2499,100000)
+    tem1 <- switch_km(tem1)
+    allData2$group = cut(allData2$DISTANCE,tem1)
+    n_arrival <- group_by(allData2,group)  %>% select(ORIGIN) %>% filter(ORIGIN==input$arrivals_departures_airport) %>% summarise(Count=n())
+    n_depart <- group_by(allData2,group)  %>% select(DEST) %>% filter(DEST==input$arrivals_departures_airport) %>% summarise(Count=n())
+    n_arrival$type = "Departure"
+    n_depart$type ="Arrival"
+    data1 <- merge(n_arrival,n_depart,all=TRUE)
+    data1 <- data1[complete.cases(data1), ]
+    data1 <- as.data.frame(data1)
+    allData2$DISTANCE <- tem
+    ggplot(data1, aes(x=group,y = Count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Distance Group", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=Count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5)
+  }
+  
+  )
   
   output$numDistance <- renderPlot({
     #justOneMonthReactive <- arrivalsDeparturesAirlinesMonth()
@@ -863,7 +863,7 @@ server <- function(input, output) {
                                    box.padding = 0.35, point.padding = 0.5,
                                    segment.color = 'grey50')
   }
-    
+  
   )
   
   output$numFlightTime <- renderPlot({
@@ -884,7 +884,7 @@ server <- function(input, output) {
   
   )
   
-##### Arrivals & Departures Airlines Tab
+  ##### Arrivals & Departures Airlines Tab
   ### O'Hare Charts
   # Table: Departure and Arrival Totals by Airline
   output$tab1_ord <-DT::renderDataTable(
@@ -965,229 +965,229 @@ server <- function(input, output) {
   ########### Arrivals and Departures Tab
   #### O'Hare Charts
   # Table: The total number of departures and total number of arrivals for each hour of the day across that month
-    output$tab2_ohare <-DT::renderDataTable(
-      DT::datatable({
-        justOneMonthReactive <- arrivalsDeparturesMonth()
-        
-        dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN=="ORD") %>% summarise(count=n())
-        #dep_hour$type = "Departure"
-        arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
-        #arr_hour$type = "Arrival"
-        colnames(dep_hour)<-c("hour","Departures")
-        colnames(arr_hour)<-c("hour","Arrivals")
-        data2 <- merge(dep_hour,arr_hour,all=TRUE)
-        data2 <- subset(data2,!is.na(data2$hour))
-        data2$hour<-switch_hour(data2$hour)
-        #set a factor for time baised on what clock we are in
-        #data2$hour <- set_time_factor(data2$hour)
-        data2 <- as.data.frame(data2)
-        
-        data2
-        
-      },
-      options = list(pageLength = 12)
-      )
-      
-    )
-    
-    # Bar Graph: Arrivals and Departures by Hour of the Day 
-    output$BarByTimeOhare <- renderPlot({
+  output$tab2_ohare <-DT::renderDataTable(
+    DT::datatable({
       justOneMonthReactive <- arrivalsDeparturesMonth()
       
       dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN=="ORD") %>% summarise(count=n())
-      colnames(dep_hour)[1]<-"hour"
-      dep_hour$type = "Departure"
-      
+      #dep_hour$type = "Departure"
       arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
-      arr_hour$type = "Arrival"
-      
+      #arr_hour$type = "Arrival"
+      colnames(dep_hour)<-c("hour","Departures")
+      colnames(arr_hour)<-c("hour","Arrivals")
       data2 <- merge(dep_hour,arr_hour,all=TRUE)
       data2 <- subset(data2,!is.na(data2$hour))
       data2$hour<-switch_hour(data2$hour)
       #set a factor for time baised on what clock we are in
-      data2$hour <- set_time_factor(data2$hour)
+      #data2$hour <- set_time_factor(data2$hour)
       data2 <- as.data.frame(data2)
       
-      ggplot(data2, aes(x=hour,y = count , fill=type)) + 
-        geom_bar(stat = "identity", position = "dodge") +
-        labs(x="Hour", y = "Number of Flights") +
-        scale_fill_manual(values=colorsAD) +
-        geom_text(aes(label=count), vjust=-0.3,
-                  position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 2200))
+      data2
       
-    })
-    
-    
-    # Table: The total number of departures and total number of arrivals for each day of the week across that month
-    output$tab3_ohare <-DT::renderDataTable(
-      DT::datatable({
-        justOneMonthReactive <- arrivalsDeparturesMonth()
-        
-        dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN=="ORD") %>% summarise(number_dep=n())
-        arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(number_arrival=n())
-        colnames(dep_weekday)<-c("weekday","Departures")
-        colnames(arr_weekday)<-c("weekday","Arrivals")
-        data3 <- merge(dep_weekday,arr_weekday,all=TRUE)
-        data3 <- subset(data3,!is.na(data3$weekday))
-        data3[is.na(data3)] <- 0
-        data3 <- as.data.frame(data3)
-        #reodder days of week
-        data3$weekday <- factor(data3$weekday, levels = dayOfWeek )
-        data3
-        
-      },
-      options = list(pageLength = 12, order = list(list(1, 'asc')))
-      )
-      
+    },
+    options = list(pageLength = 12)
     )
     
-    # Bar Graph: Arrivals and Departures by Weekday
-    output$BarByWeekdayOhare<- renderPlot({
+  )
+  
+  # Bar Graph: Arrivals and Departures by Hour of the Day 
+  output$BarByTimeOhare <- renderPlot({
+    justOneMonthReactive <- arrivalsDeparturesMonth()
+    
+    dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN=="ORD") %>% summarise(count=n())
+    colnames(dep_hour)[1]<-"hour"
+    dep_hour$type = "Departure"
+    
+    arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(count=n())
+    arr_hour$type = "Arrival"
+    
+    data2 <- merge(dep_hour,arr_hour,all=TRUE)
+    data2 <- subset(data2,!is.na(data2$hour))
+    data2$hour<-switch_hour(data2$hour)
+    #set a factor for time baised on what clock we are in
+    data2$hour <- set_time_factor(data2$hour)
+    data2 <- as.data.frame(data2)
+    
+    ggplot(data2, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Hour", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 2200))
+    
+  })
+  
+  
+  # Table: The total number of departures and total number of arrivals for each day of the week across that month
+  output$tab3_ohare <-DT::renderDataTable(
+    DT::datatable({
       justOneMonthReactive <- arrivalsDeparturesMonth()
       
-      dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN=="ORD") %>% summarise(Count=n())
-      dep_weekday$type = "Departure"
-      arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(Count=n())
-      arr_weekday$type = "Arrival"
-      colnames(dep_weekday)<-c("weekday","Count", "type")
+      dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN=="ORD") %>% summarise(number_dep=n())
+      arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(number_arrival=n())
+      colnames(dep_weekday)<-c("weekday","Departures")
+      colnames(arr_weekday)<-c("weekday","Arrivals")
       data3 <- merge(dep_weekday,arr_weekday,all=TRUE)
       data3 <- subset(data3,!is.na(data3$weekday))
       data3[is.na(data3)] <- 0
       data3 <- as.data.frame(data3)
-      data3$weekday <- factor(data3$weekday, levels = dayOfWeek)
+      #reodder days of week
+      data3$weekday <- factor(data3$weekday, levels = dayOfWeek )
+      data3
       
-      
-      ggplot(data3, aes(x=weekday,y = Count , fill=type)) + 
-        geom_bar(stat = "identity", position = "dodge") +
-        labs(x="Day", y = "Number of Flights") +
-        scale_fill_manual(values=colorsAD) +
-        geom_text(aes(label=Count), vjust=-0.3,
-                  position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 4500))
-      
-    })
-  #### Midway Charts
-    # Table: The total number of departures and total number of arrivals for each hour of the day across that month
-    output$tab2_mdw <-DT::renderDataTable(
-      DT::datatable({
-        justOneMonthReactive <- arrivalsDeparturesMonth()
-        
-        dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN=="MDW") %>% summarise(count=n())
-        #dep_hour$type = "Departure"
-        arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
-        #arr_hour$type = "Arrival"
-        colnames(dep_hour)<-c("hour","Departures")
-        colnames(arr_hour)<-c("hour","Arrivals")
-        data2 <- merge(dep_hour,arr_hour,all=TRUE)
-        data2 <- subset(data2,!is.na(data2$hour))
-        data2$hour<-switch_hour(data2$hour)
-        #set a factor for time baised on what clock we are in
-        #data2$hour <- set_time_factor(data2$hour)
-        data2 <- as.data.frame(data2)
-        
-        data2
-        
-      },
-      options = list(pageLength = 12)
-      )
-      
+    },
+    options = list(pageLength = 12, order = list(list(1, 'asc')))
     )
     
-    # Bar Graph: Arrivals and Departures by Hour of the Day 
-    output$BarByTimeMDW <- renderPlot({
+  )
+  
+  # Bar Graph: Arrivals and Departures by Weekday
+  output$BarByWeekdayOhare<- renderPlot({
+    justOneMonthReactive <- arrivalsDeparturesMonth()
+    
+    dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN=="ORD") %>% summarise(Count=n())
+    dep_weekday$type = "Departure"
+    arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST=="ORD") %>% summarise(Count=n())
+    arr_weekday$type = "Arrival"
+    colnames(dep_weekday)<-c("weekday","Count", "type")
+    data3 <- merge(dep_weekday,arr_weekday,all=TRUE)
+    data3 <- subset(data3,!is.na(data3$weekday))
+    data3[is.na(data3)] <- 0
+    data3 <- as.data.frame(data3)
+    data3$weekday <- factor(data3$weekday, levels = dayOfWeek)
+    
+    
+    ggplot(data3, aes(x=weekday,y = Count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Day", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=Count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 4500))
+    
+  })
+  #### Midway Charts
+  # Table: The total number of departures and total number of arrivals for each hour of the day across that month
+  output$tab2_mdw <-DT::renderDataTable(
+    DT::datatable({
       justOneMonthReactive <- arrivalsDeparturesMonth()
       
       dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN=="MDW") %>% summarise(count=n())
-      colnames(dep_hour)[1]<-"hour"
-      dep_hour$type = "Departure"
-      
+      #dep_hour$type = "Departure"
       arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
-      arr_hour$type = "Arrival"
-      
+      #arr_hour$type = "Arrival"
+      colnames(dep_hour)<-c("hour","Departures")
+      colnames(arr_hour)<-c("hour","Arrivals")
       data2 <- merge(dep_hour,arr_hour,all=TRUE)
       data2 <- subset(data2,!is.na(data2$hour))
       data2$hour<-switch_hour(data2$hour)
       #set a factor for time baised on what clock we are in
-      data2$hour <- set_time_factor(data2$hour)
+      #data2$hour <- set_time_factor(data2$hour)
       data2 <- as.data.frame(data2)
       
-      ggplot(data2, aes(x=hour,y = count , fill=type)) + 
-        geom_bar(stat = "identity", position = "dodge") +
-        labs(x="Hour", y = "Number of Flights") +
-        scale_fill_manual(values=colorsAD) +
-        geom_text(aes(label=count), vjust=-0.3,
-                  position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 2200))
+      data2
       
-    })
-    
-    
-    # Table: The total number of departures and total number of arrivals for each day of the week across that month
-    output$tab3_mdw <-DT::renderDataTable(
-      DT::datatable({
-        justOneMonthReactive <- arrivalsDeparturesMonth()
-        
-        dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN=="MDW") %>% summarise(number_dep=n())
-        arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(number_arrival=n())
-        colnames(dep_weekday)<-c("weekday","Departures")
-        colnames(arr_weekday)<-c("weekday","Arrivals")
-        data3 <- merge(dep_weekday,arr_weekday,all=TRUE)
-        data3 <- subset(data3,!is.na(data3$weekday))
-        data3[is.na(data3)] <- 0
-        data3 <- as.data.frame(data3)
-        #reodder days of week
-        data3$weekday <- factor(data3$weekday, levels = dayOfWeek )
-        data3
-        
-      },
-      options = list(pageLength = 8, order = list(list(1, 'asc')))
-      )
-      
+    },
+    options = list(pageLength = 12)
     )
     
-    # Bar Graph: Arrivals and Departures by Weekday
-    output$BarByWeekdayMDW<- renderPlot({
+  )
+  
+  # Bar Graph: Arrivals and Departures by Hour of the Day 
+  output$BarByTimeMDW <- renderPlot({
+    justOneMonthReactive <- arrivalsDeparturesMonth()
+    
+    dep_hour <- group_by(justOneMonthReactive,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN=="MDW") %>% summarise(count=n())
+    colnames(dep_hour)[1]<-"hour"
+    dep_hour$type = "Departure"
+    
+    arr_hour <- group_by(justOneMonthReactive,hour)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(count=n())
+    arr_hour$type = "Arrival"
+    
+    data2 <- merge(dep_hour,arr_hour,all=TRUE)
+    data2 <- subset(data2,!is.na(data2$hour))
+    data2$hour<-switch_hour(data2$hour)
+    #set a factor for time baised on what clock we are in
+    data2$hour <- set_time_factor(data2$hour)
+    data2 <- as.data.frame(data2)
+    
+    ggplot(data2, aes(x=hour,y = count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Hour", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 2200))
+    
+  })
+  
+  
+  # Table: The total number of departures and total number of arrivals for each day of the week across that month
+  output$tab3_mdw <-DT::renderDataTable(
+    DT::datatable({
       justOneMonthReactive <- arrivalsDeparturesMonth()
       
-      dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN=="MDW") %>% summarise(Count=n())
-      dep_weekday$type = "Departure"
-      arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(Count=n())
-      arr_weekday$type = "Arrival"
-      colnames(dep_weekday)<-c("weekday","Count", "type")
+      dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN=="MDW") %>% summarise(number_dep=n())
+      arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(number_arrival=n())
+      colnames(dep_weekday)<-c("weekday","Departures")
+      colnames(arr_weekday)<-c("weekday","Arrivals")
       data3 <- merge(dep_weekday,arr_weekday,all=TRUE)
       data3 <- subset(data3,!is.na(data3$weekday))
       data3[is.na(data3)] <- 0
       data3 <- as.data.frame(data3)
-      data3$weekday <- factor(data3$weekday, levels = dayOfWeek)
+      #reodder days of week
+      data3$weekday <- factor(data3$weekday, levels = dayOfWeek )
+      data3
+      
+    },
+    options = list(pageLength = 8, order = list(list(1, 'asc')))
+    )
+    
+  )
+  
+  # Bar Graph: Arrivals and Departures by Weekday
+  output$BarByWeekdayMDW<- renderPlot({
+    justOneMonthReactive <- arrivalsDeparturesMonth()
+    
+    dep_weekday <- group_by(justOneMonthReactive,weekday_dep)  %>% select(ORIGIN_AIRPORT_ID,ORIGIN) %>% filter(ORIGIN=="MDW") %>% summarise(Count=n())
+    dep_weekday$type = "Departure"
+    arr_weekday <- group_by(justOneMonthReactive,weekday)  %>% select(DEST) %>% filter(DEST=="MDW") %>% summarise(Count=n())
+    arr_weekday$type = "Arrival"
+    colnames(dep_weekday)<-c("weekday","Count", "type")
+    data3 <- merge(dep_weekday,arr_weekday,all=TRUE)
+    data3 <- subset(data3,!is.na(data3$weekday))
+    data3[is.na(data3)] <- 0
+    data3 <- as.data.frame(data3)
+    data3$weekday <- factor(data3$weekday, levels = dayOfWeek)
+    
+    
+    ggplot(data3, aes(x=weekday,y = Count , fill=type)) + 
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x="Day", y = "Number of Flights") +
+      scale_fill_manual(values=colorsAD) +
+      geom_text(aes(label=Count), vjust=-0.3,
+                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 4500))
+    
+  })
+  
+  ######    
+  output$interestingDays<- DT::renderDataTable(
+    
+    DT::datatable({
       
       
-      ggplot(data3, aes(x=weekday,y = Count , fill=type)) + 
-        geom_bar(stat = "identity", position = "dodge") +
-        labs(x="Day", y = "Number of Flights") +
-        scale_fill_manual(values=colorsAD) +
-        geom_text(aes(label=Count), vjust=-0.3,
-                  position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 4500))
+      
+      HolidayType <- c("Christmas","New Year","Thanksgiving","Independence Day","Labor Day","Columbus Day","Lollapaloza", "Veterans Day")
+      
+      Date <- c("Maybe","Maybe","Yes","Maybe","Maybe","No","Yes","No")
+      
+      results <- table(HolidayType, Date)
+      
+      results
+      
+      
       
     })
     
-######    
-    output$interestingDays<- DT::renderDataTable(
-      
-      DT::datatable({
-        
-        
-        
-        HolidayType <- c("Christmas","New Year","Thanksgiving","Independence Day","Labor Day","Columbus Day","Lollapaloza", "Veterans Day")
-        
-        Date <- c("Maybe","Maybe","Yes","Maybe","Maybe","No","Yes","No")
-        
-        results <- table(HolidayType, Date)
-        
-        results
-        
-        
-        
-      })
-      
-    )
+  )
   
   ########### Delays Dashboard Tab
   #### O'Hare charts

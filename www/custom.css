@@ -12,7 +12,7 @@
 .main-header .logo {
     font-weight: bold;
     font-size: 48px;
-    height: 90px;
+    height: 100px;
     padding-top: 25px;
 }
 
@@ -21,13 +21,13 @@
 }
 
 .sidebar-menu{
-  font-size: 48px;
+  font-size: 44px;
 }
 
 /*Font size of tables*/
 .box.box-solid.box-primary {
   border: 1px solid black;
-  font-size: 27px;
+  font-size: 28px;
 }
 
 .box.box-solid.box-primary > .box-header {
