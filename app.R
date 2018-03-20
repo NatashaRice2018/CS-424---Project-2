@@ -1587,22 +1587,73 @@ server <- function(input, output) {
     }
   )
   
-
-  
   output$HeatArrHourWeek <- renderPlot(
     {
-      OhrArr <- subset(allData2, DEST== "ORD")
+      OhrArr <- subset(allData2, DEST==input$day_airport)
       OhrArr2 <- group_by(OhrArr,hour, weekday) %>% select(DEST,hour, weekday )  %>% summarise(count=n())
       OhrArr2$hour<-switch_hour(OhrArr2$hour)
+      OhrArr2$hour <- set_time_factor(OhrArr2$hour)
+      
       colnames(OhrArr2)<-c("Hour","Week", "Count")
       OhrArr2$scale <- scale(OhrArr2$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
-      
       OhrArr2$Week <- factor(OhrArr2$Week, levels = dayOfWeek )
-      ggplot(OhrArr2, aes(x=Hour, y=Week )) +
+      
+      OhrArr2_delay <- group_by(OhrArr,hour, weekday)%>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(ARR_DELAY<0 & DEST==input$day_airport )%>% summarise(count=n())
+      OhrArr2_delay$hour<-switch_hour(OhrArr2_delay$hour)
+      OhrArr2_delay$hour <- set_time_factor(OhrArr2_delay$hour)
+      
+      colnames(OhrArr2_delay)<-c("Hour","Week", "Count")
+      OhrArr2_delay$scale <- scale(OhrArr2_delay$Count, center = FALSE, scale = max(OhrArr2_delay$Count, na.rm = TRUE))
+      OhrArr2_delay$Week <- factor(OhrArr2_delay$Week, levels = dayOfWeek )
+      
+      
+      
+      p1<-ggplot(OhrArr2, aes(x=Hour, y=Week )) +
         geom_tile(aes(fill = Count), colour = "white") + 
         scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
         theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Week, label = Count), color = "black", size = 4)
       #scale_y_continuous(breaks=c(3,6,9,12))
+      
+      p2<-ggplot(OhrArr2_delay, aes(x=Hour, y=Week )) +
+        geom_tile(aes(fill = Count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Week, label = Count), color = "black", size = 4)
+      #scale_y_continuous(breaks=c(3,6,9,12))
+      
+      OhrArr <- subset(allData2, ORIGIN==input$day_airport)
+      OhrArr2 <- group_by(OhrArr,hour_dep, weekday) %>% select(DEST,hour_dep, weekday )  %>% summarise(count=n())
+      OhrArr2$hour_dep<-switch_hour(OhrArr2$hour_dep)
+      OhrArr2$hour_dep <- set_time_factor(OhrArr2$hour_dep)
+      
+      colnames(OhrArr2)<-c("Hour","Week", "Count")
+      OhrArr2$scale <- scale(OhrArr2$Count, center = FALSE, scale = max(OhrArr2$Count, na.rm = TRUE))
+      OhrArr2$Week <- factor(OhrArr2$Week, levels = dayOfWeek )
+      
+      OhrArr2_delay <- group_by(OhrArr,hour_dep, weekday)%>% select(DEST,ORIGIN,ARR_DELAY,DEP_DELAY) %>% filter(DEP_DELAY<0 & ORIGIN==input$day_airport )%>% summarise(count=n())
+      OhrArr2_delay$hour_dep<-switch_hour(OhrArr2_delay$hour_dep)
+      OhrArr2_delay$hour_dep <- set_time_factor(OhrArr2_delay$hour_dep)
+      
+      colnames(OhrArr2_delay)<-c("Hour","Week", "Count")
+      OhrArr2_delay$scale <- scale(OhrArr2_delay$Count, center = FALSE, scale = max(OhrArr2_delay$Count, na.rm = TRUE))
+      OhrArr2_delay$Week <- factor(OhrArr2_delay$Week, levels = dayOfWeek )
+      
+      
+      
+      p3<-ggplot(OhrArr2, aes(x=Hour, y=Week )) +
+        geom_tile(aes(fill = Count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Week, label = Count), color = "black", size = 4)
+      #scale_y_continuous(breaks=c(3,6,9,12))
+      
+      p4<-ggplot(OhrArr2_delay, aes(x=Hour, y=Week )) +
+        geom_tile(aes(fill = Count), colour = "white") + 
+        scale_fill_gradient(low = colorsLH[1], high = colorsLH[2])+
+        theme(panel.background = element_rect(fill = 'white'))+geom_text(aes(x=Hour, y=Week, label = Count), color = "black", size = 4)
+      #scale_y_continuous(breaks=c(3,6,9,12))
+      
+      
+      
+      grid.arrange(arrangeGrob(arrangeGrob(p1,p2,p3,p4),ncol=1))
     }
   )
   
