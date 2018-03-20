@@ -107,11 +107,11 @@ ui <-
   dashboardPage( 
     
     dashboardHeader(title = "Learning to Fly",
-                    titleWidth=650
+                    titleWidth=600
                     ),
     
     dashboardSidebar(
-      width= 650,
+      width= 600,
       sidebarMenu(
         menuItem("About", tabName="about"),
         menuItem("Arrivals & Departures", tabName="arrivals_departures"),
@@ -224,7 +224,7 @@ ui <-
                                    
                                    plotOutput("HeatArrHourMon", height=800)),
                                box(title = "Heatmap hour", solidHeader = TRUE, status = "primary",width = 12,
-                                   plotOutput("HeatArrHourWeek"))
+                                   plotOutput("HeatArrHourWeek"), height=800)
                              )
                     ),
                     width = 12
