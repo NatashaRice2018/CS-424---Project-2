@@ -2612,7 +2612,6 @@ server <- function(input, output) {
       #Adding slanting to lables
       theme(axis.text.x = element_text(angle = 15, hjust = 1))
     
-    
   })
   
   output$DayDelayMDW <- renderPlot({
