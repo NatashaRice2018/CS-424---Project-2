@@ -919,7 +919,9 @@ server <- function(input, output) {
       labs(x="Ariline", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 8300))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 8300))+
+      #Adding slanting to lables
+      theme(axis.text.x = element_text(angle = 15, hjust = 1))
     
   })
   
@@ -1062,8 +1064,9 @@ server <- function(input, output) {
       labs(x="Day", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 4500))
-    
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 4500)) +
+      #Adding slanting to lables
+      theme(axis.text.x = element_text(angle = 15, hjust = 1))
   })
   #### Midway Charts
   # Table: The total number of departures and total number of arrivals for each hour of the day across that month
@@ -1164,7 +1167,9 @@ server <- function(input, output) {
       labs(x="Day", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 4500))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 4500))+
+      #Adding slanting to lables
+      theme(axis.text.x = element_text(angle = 15, hjust = 1))
     
   })
   
@@ -1242,7 +1247,9 @@ server <- function(input, output) {
       labs(x="Time", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 1500))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 1500))+
+      #Adding slanting to lables
+      theme(axis.text.x = element_text(angle = 15, hjust = 1))
   })
   
   #### Midway Charts
@@ -1297,7 +1304,9 @@ server <- function(input, output) {
       labs(x="Time", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 1500))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 1500))+
+      #Adding slanting to lables
+      theme(axis.text.x = element_text(angle = 15, hjust = 1))
   })
   
   # select delay type 
@@ -2116,7 +2125,9 @@ server <- function(input, output) {
         labs(x="Hour", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=5.0)
+                  position = position_dodge(0.9), size=5.0)+
+        #Adding slanting to lables
+        theme(axis.text.x = element_text(angle = 15, hjust = 1))
     }
     else
     {
@@ -2127,7 +2138,9 @@ server <- function(input, output) {
         labs(x="Hour", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=5.0)
+                  position = position_dodge(0.9), size=5.0)+
+        #Adding slanting to lables
+        theme(axis.text.x = element_text(angle = 15, hjust = 1))
     }#end Else statement
     
   })
@@ -2168,7 +2181,9 @@ server <- function(input, output) {
         labs(x="Hour", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=5.0)
+                  position = position_dodge(0.9), size=5.0)+
+        #Adding slanting to lables
+        theme(axis.text.x = element_text(angle = 15, hjust = 1))
     }
     else
     {
@@ -2180,7 +2195,9 @@ server <- function(input, output) {
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
                   position = position_dodge(0.9), size=5.0)+
-        ylim(0, 700)
+        ylim(0, 700)+
+        #Adding slanting to lables
+        theme(axis.text.x = element_text(angle = 15, hjust = 1))
     }#end Else statement
     
   })
@@ -2320,7 +2337,9 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=adj,
-                position = position_dodge(0.9), size=5.0)
+                position = position_dodge(0.9), size=5.0)+
+      #Adding slanting to lables
+      theme(axis.text.x = element_text(angle = 15, hjust = 1))
     
     
   })
@@ -2359,7 +2378,9 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=adj,
-                position = position_dodge(0.9), size=5.0)
+                position = position_dodge(0.9), size=5.0)+
+      #Adding slanting to lables
+      theme(axis.text.x = element_text(angle = 15, hjust = 1))
     
     
   })
@@ -2499,14 +2520,16 @@ server <- function(input, output) {
     ggplot(delay_data, aes(x=type, y=hour )) +
       geom_tile(aes(fill = count), colour = "white") + 
       scale_fill_gradient(low = colorsLH[1], high = colorsLH[2]) +
-      theme(panel.background = element_rect(fill = 'white'))
+      theme(panel.background = element_rect(fill = 'white'))+
+      #Adding slanting to lables
+      theme(axis.text.x = element_text(angle = 15, hjust = 1))
   })
   
   output$DayDepArrHrMDW <- renderPlot({
     #Get data for just midway on the selected date
     data2 <- subset(allData2, (ORIGIN == "MDW" | DEST == "MDW") )
     data2 <- subset(data2, input$day == weekday)
-    
+    ""
     dep_hour <- group_by(data2,hour_dep)  %>% select(ORIGIN) %>% filter(ORIGIN== "MDW" ) %>% summarise(count=n())
     colnames(dep_hour)[1]<-"hour"
     dep_hour$type = "Departure"
@@ -2536,7 +2559,9 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=adj,
-                position = position_dodge(0.9), size=5.0)
+                position = position_dodge(0.9), size=5.0)+
+      #Adding slanting to lables
+      theme(axis.text.x = element_text(angle = 15, hjust = 1))
     
     
   })
@@ -2575,7 +2600,9 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=adj,
-                position = position_dodge(0.9), size=5.0)
+                position = position_dodge(0.9), size=5.0)+
+      #Adding slanting to lables
+      theme(axis.text.x = element_text(angle = 15, hjust = 1))
     
     
   })
