@@ -686,7 +686,7 @@ server <- function(input, output) {
       geom_bar(stat = "identity", position = "dodge") + ggtitle("Number of Passengers Flying by Month of Year")+labs(x="Month", y = "Passengers (in millions)") +
       scale_fill_manual(values=colorsAD) + scale_x_discrete(limits = month.abb) +
       geom_text(aes(label=PASSENGERS), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
     
   })
   
@@ -766,7 +766,7 @@ server <- function(input, output) {
       labs(x="MONTH", y = "Number of passengers") +
       scale_fill_manual(values=colorsAD) +scale_x_discrete(limits = month.abb)+
       geom_text(aes(label=PASSENGERS), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
     
   })
   
@@ -799,7 +799,7 @@ server <- function(input, output) {
       labs(x="MONTH", y = "Number of Flight") +
       scale_fill_manual(values=colorsAD) +scale_x_discrete(limits = month.abb)+
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
     
   })
   
@@ -839,7 +839,7 @@ server <- function(input, output) {
       labs(x="Distance Group", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
   }
   
   )
@@ -919,7 +919,7 @@ server <- function(input, output) {
       labs(x="Ariline", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 8300))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 8300))
     
   })
   
@@ -957,7 +957,7 @@ server <- function(input, output) {
       labs(x="Ariline", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 8300))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 8300))
     
   }) 
   
@@ -1013,7 +1013,7 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 2200))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 2200))
     
   })
   
@@ -1062,7 +1062,7 @@ server <- function(input, output) {
       labs(x="Day", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 4500))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 4500))
     
   })
   #### Midway Charts
@@ -1115,7 +1115,7 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 2200))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 2200))
     
   })
   
@@ -1164,7 +1164,7 @@ server <- function(input, output) {
       labs(x="Day", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=Count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 4500))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 4500))
     
   })
   
@@ -1242,7 +1242,7 @@ server <- function(input, output) {
       labs(x="Time", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 1500))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 1500))
   })
   
   #### Midway Charts
@@ -1297,7 +1297,7 @@ server <- function(input, output) {
       labs(x="Time", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 1500))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 1500))
   })
   
   # select delay type 
@@ -1316,7 +1316,7 @@ server <- function(input, output) {
       labs(x="Month", y = "Number of Delay") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
     
     
     
@@ -1348,7 +1348,7 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
   }
   
   )
@@ -1399,7 +1399,7 @@ server <- function(input, output) {
       labs(x="Airport", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 850))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 850))
   })
   ### Midway charts
   # Table: the number of flights for the most common 15 destination and airports airports for selected airport
@@ -1446,7 +1446,7 @@ server <- function(input, output) {
       labs(x="Airport", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5) + scale_y_continuous(limits=c(0, 850))
+                position = position_dodge(0.9), size=5.0) + scale_y_continuous(limits=c(0, 850))
   })
   
   # top 50 airport selected 
@@ -1481,7 +1481,7 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=-0.3,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
     
   })
   
@@ -1508,7 +1508,7 @@ server <- function(input, output) {
         labs(x="Month", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=-0.3,
-                  position = position_dodge(0.9), size=3.5)
+                  position = position_dodge(0.9), size=5.0)
       
     }
   )
@@ -2116,7 +2116,7 @@ server <- function(input, output) {
         labs(x="Hour", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=3.5)
+                  position = position_dodge(0.9), size=5.0)
     }
     else
     {
@@ -2127,7 +2127,7 @@ server <- function(input, output) {
         labs(x="Hour", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=3.5)
+                  position = position_dodge(0.9), size=5.0)
     }#end Else statement
     
   })
@@ -2168,7 +2168,7 @@ server <- function(input, output) {
         labs(x="Hour", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=3.5)
+                  position = position_dodge(0.9), size=5.0)
     }
     else
     {
@@ -2179,7 +2179,7 @@ server <- function(input, output) {
         labs(x="Hour", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=3.5)+
+                  position = position_dodge(0.9), size=5.0)+
         ylim(0, 700)
     }#end Else statement
     
@@ -2217,7 +2217,7 @@ server <- function(input, output) {
         labs(x="Month", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=3.5)
+                  position = position_dodge(0.9), size=5.0)
     }
     else
     {
@@ -2228,7 +2228,7 @@ server <- function(input, output) {
         labs(x="Month", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=3.5)+
+                  position = position_dodge(0.9), size=5.0)+
         ylim(0, 700)
     }#end Else statement
     
@@ -2269,7 +2269,7 @@ server <- function(input, output) {
         labs(x="Month", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=3.5)
+                  position = position_dodge(0.9), size=5.0)
     }
     else
     {
@@ -2280,7 +2280,7 @@ server <- function(input, output) {
         labs(x="Month", y = "Number of Flights") +
         scale_fill_manual(values=colorsAD) +
         geom_text(aes(label=count), vjust=adj,
-                  position = position_dodge(0.9), size=3.5)+
+                  position = position_dodge(0.9), size=5.0)+
         ylim(0, 700)
     }#end Else statement
     
@@ -2320,7 +2320,7 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=adj,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
     
     
   })
@@ -2359,7 +2359,7 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=adj,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
     
     
   })
@@ -2536,7 +2536,7 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=adj,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
     
     
   })
@@ -2575,7 +2575,7 @@ server <- function(input, output) {
       labs(x="Hour", y = "Number of Flights") +
       scale_fill_manual(values=colorsAD) +
       geom_text(aes(label=count), vjust=adj,
-                position = position_dodge(0.9), size=3.5)
+                position = position_dodge(0.9), size=5.0)
     
     
   })
